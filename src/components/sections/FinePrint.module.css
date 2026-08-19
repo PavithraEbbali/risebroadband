@@ -187,4 +187,16 @@
   .rowHead {
     padding-right: var(--step-2);
   }
+
+  /*
+   * Let the amount wrap. `white-space: nowrap` is fine at 100%, but a clamp
+   * minimum is expressed in rem and therefore grows with the user's text size:
+   * at 200% zoom "$29.99 – $79.99" rendered ~250px wide and pushed the table
+   * past the viewport, so the whole page scrolled sideways (WCAG 1.4.4).
+   * At normal sizes the text still fits on one line, so nothing changes.
+   */
+  .amountCol,
+  .amount {
+    white-space: normal;
+  }
 }

@@ -242,9 +242,36 @@
 }
 
 @media (max-width: 720px) {
-  /* Panels become swipeable cards rather than shrinking to illegibility. */
+  /*
+   * Stack, do not swipe.
+   *
+   * This was a horizontal snap rail showing step 01 and a sliver of 02, with
+   * steps 02 and 03 reachable only by a sideways drag and no affordance saying
+   * so. Two thirds of a three-step conversion narrative were effectively
+   * invisible on a phone. Vertical stacking costs scroll length and gains all
+   * three steps.
+   *
+   * Every horizontal-scroll property has to be unwound together — leaving
+   * `scroll-snap-type: x` on a column grid makes vertical scrolling snap
+   * sideways to nothing and feel broken.
+   */
   .rail {
-    grid-auto-columns: 78%;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(1.75rem, 6vw, 2.5rem);
+    overflow-x: visible;
+    scroll-snap-type: none;
+    padding-bottom: 0;
+  }
+
+  .panel {
+    scroll-snap-align: none;
+  }
+
+  /* Shorter crop stacked — a 4:3 photo per step would push the copy far apart. */
+  .shot {
+    aspect-ratio: 16 / 10;
   }
 }
 

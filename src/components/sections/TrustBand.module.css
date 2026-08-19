@@ -61,7 +61,14 @@
 
 .figureValue {
   font-family: var(--face-display);
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  /*
+   * The `min(..., 11vw)` cap is load-bearing. A clamp's MINIMUM is in rem, so it
+   * scales with the user's text-size setting and cannot shrink: at 200% zoom the
+   * 2.5rem floor became 80px and two columns of figures overflowed a 390px
+   * viewport. The cap only engages under zoom or on very narrow screens — at
+   * every normal size the clamp still wins, so the design is unchanged.
+   */
+  font-size: min(clamp(2.5rem, 5vw, 4.5rem), 11vw);
   font-weight: 800;
   line-height: 0.85;
   letter-spacing: var(--track-crush);
@@ -69,12 +76,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Single uppercase words like "HOUSEHOLDS" cannot wrap, so at 200% text zoom
+   this ran 48px past its grid cell into the neighbouring column. The vw cap
+   engages only under zoom; at every normal size --type-micro still wins. */
 .figureUnit {
   margin-top: var(--step-2);
   font-family: var(--face-semi);
-  font-size: var(--type-micro);
+  font-size: min(var(--type-micro), 3.4vw);
   font-weight: 700;
-  letter-spacing: var(--track-caps);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ember-lift);
 }
@@ -166,7 +176,15 @@
   letter-spacing: 0.02em;
   /* 0.88 white over the darkened coverage plate measures 12.6:1. */
   color: rgb(255 255 255 / 0.88);
-  white-space: nowrap;
+  /*
+   * NOT `white-space: nowrap`. These chips are flex items in a wrapping row, so
+   * nowrap only holds while every chip is narrower than the viewport. At 200%
+   * text zoom "30-day money-back guarantee" measured 413px against a 390px
+   * viewport and forced the whole page to scroll sideways — a WCAG 1.4.4
+   * reflow failure. Long chips now wrap internally instead.
+   */
+  text-wrap: balance;
+  max-width: 100%;
 }
 
 .fact[data-kind='stat'] {

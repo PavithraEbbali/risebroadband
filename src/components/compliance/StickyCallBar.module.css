@@ -56,9 +56,10 @@
   letter-spacing: 0.01em;
 }
 
-/* #12060a on #ff5601 measures 8.9:1; at 0.6875rem it still clears 4.5:1. */
+/* #12060a on #ff5601 measures 8.9:1. Raised from 0.6875rem — 11px is under the
+   readable floor for a line the caller is meant to act on. */
 .sub {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   opacity: 0.82;
 }

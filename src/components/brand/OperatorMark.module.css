@@ -46,15 +46,26 @@
   padding-top: 0.06em;
 }
 
+/*
+ * Truncates rather than pushing the header controls off-screen. The header
+ * gives .brand `min-width: 0; overflow: hidden`, so under heavy text zoom the
+ * name is cut — the ellipsis makes that read as deliberate truncation instead
+ * of a misspelling ("Peal"). The monogram tile always survives.
+ */
 .word {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.22em;
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   /* Text face, not the condensed display face the carrier wordmark uses. */
   font-family: var(--face-text);
   font-size: 1em;
   letter-spacing: -0.01em;
   white-space: nowrap;
+}
+
+.word > * + * {
+  margin-left: 0.22em;
 }
 
 /* Weight contrast carries the lockup in place of a decorative glyph. */

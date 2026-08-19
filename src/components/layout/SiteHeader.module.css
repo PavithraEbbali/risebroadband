@@ -34,7 +34,15 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  flex-shrink: 0;
+  /*
+   * Shrinkable, NOT flex-shrink: 0. At 200% root font the brand grew past the
+   * bar and pushed the phone icon and menu button off-screen entirely — a
+   * WCAG 1.4.4 reflow failure, because the menu became unreachable. The mark
+   * now truncates instead; the monogram tile and both controls survive.
+   */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
   margin-right: auto;
   /* Tap target: the wordmark alone is only ~25px tall. */
   min-height: 44px;

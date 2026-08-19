@@ -5,6 +5,85 @@ Newest first.
 
 ---
 
+## 2026-08-19 — Full mobile responsiveness pass
+
+**What changed**
+
+Audited every route at 320 / 360 / 390 / 414 / 430 with touch emulation, plus landscape phone and
+200% text zoom. The earlier passes only ever checked page-level horizontal overflow, which was
+already clean — so it had been hiding eight real problems that only show up at element level, in
+landscape, or under text scaling. Started at 105 findings, ended at 1 benign one.
+
+**1. How It Works hid two of its three steps on mobile.** The horizontal snap rail showed step 01
+and a sliver of 02, with 02 and 03 reachable only by a sideways drag and no affordance saying so
+— two thirds of the conversion narrative invisible on a phone. Now stacks vertically under 720px.
+
+Every horizontal-scroll property has to be unwound together: leaving `scroll-snap-type: x` on a
+column grid makes vertical scrolling snap sideways and feel broken. Photos also drop from 4:3 to
+16:10 when stacked, or three full-height photos push the steps far apart. Desktop is untouched —
+verified the flip at 720/721px: row flow with full-width panels below, column flow with three
+346px panels above.
+
+**2. The fixed call bar was covering the end of the footer.** `body` had no bottom padding, so the
+bar sat on top of the last ~70px of the document and the footer's "How it works" and "FAQ" links
+were unreachable at the page bottom. Added `padding-bottom: calc(4.75rem + env(safe-area-inset-bottom))`
+under 900px. Measured at the true page bottom: footer ends at 768px, bar starts at 775px.
+
+**3. Landscape phones put the primary CTA below the fold.** The mobile rules are written for a
+tall viewport and produced a 707px hero inside a 390px-tall one. Added a
+`(max-height: 520px) and (orientation: landscape)` block — the disclosure fits on one line there,
+so the top padding can come in sharply and the headline/lede shrink. Hero 707px → 543px, and the
+call CTA is now visible at load.
+
+**4. 200% text zoom scrolled the page sideways** — a WCAG 1.4.4 reflow failure, from three
+separate causes, all the same root problem: **a `clamp()` minimum is expressed in rem, so it grows
+with the user's text size and cannot shrink.**
+
+- Header: `.brand` was `flex-shrink: 0`, so the wordmark grew and pushed the phone icon and menu
+  button off-screen — the menu became unreachable. Now `flex: 0 1 auto; min-width: 0; overflow:
+  hidden`, and `OperatorMark`'s word truncates with an ellipsis (it was cutting mid-letter, so
+  "Peak Connect" read as "Peal"). The monogram tile and both controls always survive.
+- `TrustBand` fact chips were `white-space: nowrap`; "30-day money-back guarantee" measured 413px
+  against a 390px viewport. They wrap now.
+- `TrustBand` figure values and `FinePrint` amounts were bounded only by rem. Fixed with
+  `min(clamp(...), 11vw)` and by letting the amount column wrap under 560px.
+
+The `min(..., vw)` cap is the general tool here: it engages only under zoom or on very narrow
+screens, and at every normal size the clamp still wins. Verified unchanged on desktop — figure
+value is still 72px at 1440, figure unit still 12px.
+
+**5. Micro-copy at 11px.** The disclosure bar, its "Full disclosure" link, the hero eyebrow and the
+sticky bar's hours line were all 0.6875rem. Raised to 0.75rem. The disclosure especially: it is
+the one sentence on the site that has to be legible, and it was the smallest text on the page.
+
+**6. Footer wordmark** lower bound was 1.75rem, which overran its box at 320px. Now
+`clamp(1.5rem, 6vw, 2.125rem)`.
+
+**Files touched**
+`src/components/sections/HowItWorks.module.css`, `src/app/globals.css`,
+`src/components/sections/Hero.module.css`, `src/components/sections/TrustBand.module.css`,
+`src/components/sections/FinePrint.module.css`,
+`src/components/compliance/TopDisclosureBar.module.css`,
+`src/components/compliance/StickyCallBar.module.css`,
+`src/components/layout/SiteHeader.module.css`, `src/components/layout/SiteFooter.module.css`,
+`src/components/brand/OperatorMark.module.css`.
+
+**Verified**
+`tsc` clean; `lint-copy` clean; static export builds 18 routes. Element-level audit across 5
+routes x 5 widths (320–430) with touch emulation: 1 finding, benign — `RiseLogo`'s `.sub` paints
+2–3px past its flex box because of the documented negative margin that pulls back trailing
+letter-spacing. Confirmed by screenshot that nothing clips; it sits 347px from the nearest
+boundary. Landscape 844x390: 0 overflow, CTA visible at load. 200% root font: 0 overflow.
+Desktop 1024/1280/1440/1920: 0 overflow, no regressions.
+
+**Trap worth remembering:** `document.querySelector('[class*="HowItWorks_rail"]')` matches
+`railWrap` before `rail`, so an audit script reports the wrapper's default `grid-auto-flow: row`
+and looks like the desktop rail is broken when it is not. Same substring-ambiguity class as the
+`[class*="card"]` and `[class*="netNode"]` traps logged earlier. Query the actual element
+(`ol[class*="HowItWorks_rail"]`).
+
+---
+
 ## 2026-08-19 — Fix: final CTA button thrown to the section edge
 
 **What changed**

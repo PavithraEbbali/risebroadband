@@ -29,8 +29,9 @@
   align-items: center;
 }
 
+/* Lower bound was 1.75rem, which overran its box by 3px at 320px. */
 .logo {
-  font-size: clamp(1.75rem, 2.5vw, 2.125rem);
+  font-size: clamp(1.5rem, 6vw, 2.125rem);
 }
 
 /* Matches the header treatment so the lockup reads consistently in both places. */

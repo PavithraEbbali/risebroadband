@@ -212,6 +212,18 @@ body {
   overflow-x: hidden;
 }
 
+/*
+ * Clearance for the fixed mobile call bar (StickyCallBar, shown under 900px).
+ * Without this the bar sits on top of the last ~70px of the document — the
+ * footer's "How it works" and "FAQ" links were unreachable at the page bottom.
+ * Matches the bar's 52px control plus its padding and the safe-area inset.
+ */
+@media (max-width: 899.98px) {
+  body {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 img,
 picture,
 svg,
