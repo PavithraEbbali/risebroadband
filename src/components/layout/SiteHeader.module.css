@@ -1,0 +1,286 @@
+.header {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: var(--tier-nav);
+  transition:
+    background var(--flow-base) var(--ease-exit),
+    box-shadow var(--flow-base) var(--ease-exit),
+    backdrop-filter var(--flow-base) var(--ease-exit);
+}
+
+/*
+ * No gradient shim behind the transparent bar — nothing is layered over the
+ * hero artwork by request. Nav legibility over the image is carried by
+ * text-shadow on the links themselves (see .navLink / .phone below).
+ */
+
+/* Transparent over the dark hero, solid once the user leaves it. */
+.header[data-scrolled] {
+  background: rgb(255 255 255 / 0.92);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: var(--lift-bar);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  height: clamp(4rem, 6vw, 4.75rem);
+}
+
+/* ---- brand ---- */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: auto;
+  /* Tap target: the wordmark alone is only ~25px tall. */
+  min-height: 44px;
+  /* The logo inherits this; it flips when the bar goes solid. */
+  color: var(--ink-invert);
+  transition: color var(--flow-base) var(--ease-exit);
+}
+
+.header[data-scrolled] .brand {
+  color: var(--ink-strong);
+}
+
+.logo {
+  font-size: 1.5rem;
+  /* drop-shadow rather than text-shadow so the monogram tile's border gets it
+     too — a text-shadow would light the letters and leave the box flat. */
+  filter: drop-shadow(0 1px 3px rgb(4 8 16 / 0.85)) drop-shadow(0 2px 10px rgb(4 8 16 / 0.6));
+  transition: transform var(--flow-base) var(--ease-pop), filter var(--flow-base) var(--ease-exit);
+}
+
+.header[data-scrolled] .logo {
+  filter: none;
+}
+
+.brand:hover .logo {
+  transform: scale(1.03);
+}
+
+/* Reseller status, set beside the mark and divided by a rule so it reads as a
+   qualifier on the brand rather than part of the wordmark. */
+/* ---- nav ---- */
+
+.nav {
+  display: block;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 1.75rem);
+}
+
+.navLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--type-fine);
+  font-weight: 600;
+  color: var(--ink-invert);
+  /* Carries legibility over the artwork in place of a gradient shim. */
+  text-shadow: 0 1px 3px rgb(4 8 16 / 0.85), 0 2px 10px rgb(4 8 16 / 0.7);
+  transition: color var(--flow-quick) var(--ease-exit);
+}
+
+.header[data-scrolled] .navLink {
+  color: var(--ink-body);
+  font-weight: 500;
+  text-shadow: none;
+}
+
+/* Underline grows from the left on hover. */
+.navLink::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 100%;
+  height: 2px;
+  border-radius: var(--bend-pill);
+  background: var(--ember-core);
+  transform: scaleX(0);
+  transform-origin: 0% 50%;
+  transition: transform var(--flow-base) var(--ease-exit);
+}
+
+.navLink:hover::after {
+  transform: scaleX(1);
+}
+
+.navLink:hover {
+  color: var(--ink-invert);
+}
+
+.header[data-scrolled] .navLink:hover {
+  color: var(--ember-text);
+}
+
+/* ---- actions ---- */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--step-3);
+  flex-shrink: 0;
+}
+
+.phone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  gap: var(--step-2);
+  font-size: var(--type-fine);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--ink-invert);
+  text-shadow: 0 1px 3px rgb(4 8 16 / 0.85), 0 2px 10px rgb(4 8 16 / 0.7);
+  transition: color var(--flow-base) var(--ease-exit);
+}
+
+.header[data-scrolled] .phone {
+  color: var(--ink-strong);
+  text-shadow: none;
+}
+
+.phoneIcon {
+  width: 17px;
+  height: 17px;
+  color: var(--ember-core);
+  transition: transform var(--flow-base) var(--ease-pop);
+}
+
+.phone:hover .phoneIcon {
+  transform: rotate(-12deg) scale(1.12);
+}
+
+/* ---- burger ---- */
+
+.burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.7rem;
+  border-radius: var(--bend-sm);
+}
+
+.burgerBar {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: var(--bend-pill);
+  background: var(--ink-invert);
+  transition:
+    transform var(--flow-base) var(--ease-exit),
+    opacity var(--flow-quick) var(--ease-exit),
+    background var(--flow-base) var(--ease-exit);
+}
+
+.header[data-scrolled] .burgerBar {
+  background: var(--ink-strong);
+}
+
+.burger[aria-expanded='true'] .burgerBar[data-top] {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.burger[aria-expanded='true'] .burgerBar[data-mid] {
+  opacity: 0;
+}
+
+.burger[aria-expanded='true'] .burgerBar[data-bot] {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ---- drawer ---- */
+
+.drawer {
+  position: fixed;
+  inset: clamp(4rem, 6vw, 4.75rem) 0 0;
+  z-index: var(--tier-drawer);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--step-6) var(--bay-x) var(--step-8);
+  background: var(--pane-night);
+  color: var(--ink-invert);
+  overflow-y: auto;
+}
+
+.drawerList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--step-2);
+}
+
+.drawerLink {
+  display: block;
+  padding-block: var(--step-3);
+  border-bottom: 1px solid var(--rule-invert);
+  font-family: var(--face-display);
+  font-size: clamp(1.75rem, 7vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: var(--track-crush);
+  text-transform: uppercase;
+  color: var(--ink-invert);
+  transition: color var(--flow-quick) var(--ease-exit);
+}
+
+.drawerLink:hover {
+  color: var(--ember-core);
+}
+
+.drawerFoot {
+  margin-top: var(--step-7);
+}
+
+.drawerPhone {
+  display: inline-block;
+  font-family: var(--face-semi);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ember-core);
+  margin-bottom: var(--step-3);
+}
+
+.drawerNote {
+  font-size: var(--type-micro);
+  line-height: var(--lead-copy);
+  color: var(--ink-invert-faint);
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 1100px) {
+  .nav {
+    display: none;
+  }
+
+  .burger {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .phone span {
+    display: none;
+  }
+
+  /* Keep the wordmark from crowding the burger on narrow phones. */
+  .logo {
+    font-size: 1.25rem;
+  }
+
+}

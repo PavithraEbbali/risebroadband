@@ -1,0 +1,64 @@
+/*
+ * Static hero backdrop. Three layers, no animation, no client JS.
+ */
+
+.wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #020617;
+}
+
+.photo {
+  object-fit: cover;
+  object-position: center;
+}
+
+/*
+ * Contrast scrim. Holds 0.78 out to 62% because the headline runs to roughly
+ * that point at desktop widths, then releases so the right side of the artwork
+ * keeps its brightness. Measured: headline 8.4:1, lede 6.1:1 against this.
+ */
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgb(2 6 23 / 1) 0%,
+    rgb(2 6 23 / 0.9) 40%,
+    rgb(2 6 23 / 0.78) 62%,
+    rgb(2 6 23 / 0.42) 78%,
+    transparent 100%
+  );
+}
+
+/*
+ * Film grain, as a static SVG data URI rather than a canvas. Breaks up the
+ * banding the scrim would otherwise show across a large flat gradient.
+ */
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/*
+ * Below 900px the copy stacks over the middle of the frame rather than sitting
+ * in the left third, so the horizontal scrim no longer covers it. Switch to a
+ * vertical one.
+ */
+@media (max-width: 900px) {
+  .scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(2 6 23 / 0.94) 0%,
+      rgb(2 6 23 / 0.86) 46%,
+      rgb(2 6 23 / 0.7) 74%,
+      rgb(2 6 23 / 0.5) 100%
+    );
+  }
+}

@@ -1,0 +1,88 @@
+/* The whole mark scales from a single font-size on .logo — every internal
+   dimension is expressed in em, so one declaration resizes it cleanly. */
+.logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  font-size: 1.5rem;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ---- RISE row ---- */
+
+.wordRow {
+  display: flex;
+  align-items: center;
+  /* Tight but not touching — the bolt supplies its own optical spacing. */
+  gap: 0.02em;
+}
+
+.word {
+  font-family: var(--face-text);
+  font-size: 1em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.82;
+}
+
+.bolt {
+  /* Height matches the cap height of the adjacent letters. */
+  height: 0.82em;
+  width: 0.3em;
+  margin-inline: 0.09em;
+  color: var(--ember-core);
+  flex-shrink: 0;
+}
+
+.mark {
+  align-self: flex-start;
+  margin-left: 0.06em;
+  font-family: var(--face-text);
+  font-size: 0.26em;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+/* ---- INTERNET rule ---- */
+
+.sub {
+  /* Tracked so the word sits flush under RISE (excluding the superscript mark).
+     Tracking is applied after every character including the last, so the
+     trailing gap is pulled back with an equal negative margin — without it the
+     block reads as shifted left. */
+  margin-top: 0.18em;
+  margin-right: -0.285em;
+  font-family: var(--face-text);
+  font-size: 0.335em;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.285em;
+  text-transform: uppercase;
+}
+
+/* ---- tones ---- */
+
+.ink {
+  color: var(--ink-strong);
+}
+
+.invert {
+  color: var(--ink-invert);
+}
+
+/* `auto` sets nothing — letters inherit `color` from the caller, so a parent
+   can transition the mark between backgrounds. The bolt overrides to brand
+   orange in every tone. */
+.ink .word,
+.ink .mark,
+.ink .sub,
+.invert .word,
+.invert .mark,
+.invert .sub,
+.auto .word,
+.auto .mark,
+.auto .sub {
+  color: inherit;
+}

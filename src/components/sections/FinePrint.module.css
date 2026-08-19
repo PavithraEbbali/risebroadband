@@ -1,0 +1,190 @@
+/*
+ * Intentionally the least decorated section on the page. Where the plan cards
+ * float and the step rail scrolls, this is a ruled document: hairlines, tabular
+ * figures, no shadow, no motion. That contrast is the message.
+ */
+
+.section {
+  padding-block: var(--bay-y);
+  background: var(--pane-sink, #f5f5f4);
+  border-block: 1px solid var(--rule-soft, rgb(0 0 0 / 0.1));
+}
+
+.head {
+  max-width: 46rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.kicker {
+  display: block;
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ember-press);
+  margin-bottom: var(--step-3);
+}
+
+.heading {
+  font-family: var(--face-display);
+  font-size: clamp(1.875rem, 3.6vw, 3rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: var(--track-crush);
+  text-transform: uppercase;
+  color: var(--ink-strong);
+  margin-bottom: var(--step-3);
+}
+
+.lede {
+  font-size: var(--type-fine);
+  line-height: var(--lead-loose);
+  color: var(--ink-mute);
+}
+
+/* Three columns on desktop, stacking to one. auto-fit rather than a fixed
+   count so the middle table (two rows) never leaves a dead column. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: clamp(1rem, 2.4vw, 2rem);
+  align-items: start;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.caption {
+  caption-side: top;
+  text-align: left;
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 800;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-strong);
+  padding-bottom: var(--step-2);
+  border-bottom: 3px solid var(--ink-strong);
+  margin-bottom: 0;
+}
+
+.table thead th {
+  font-family: var(--face-semi);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  text-align: left;
+  padding: var(--step-2) 0;
+  border-bottom: 1px solid var(--rule-soft, rgb(0 0 0 / 0.14));
+}
+
+.amountCol,
+.amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table tbody tr + tr th,
+.table tbody tr + tr td {
+  border-top: 1px solid var(--rule-soft, rgb(0 0 0 / 0.1));
+}
+
+.rowHead {
+  text-align: left;
+  font-weight: 400;
+  padding: var(--step-3) var(--step-3) var(--step-3) 0;
+  vertical-align: top;
+}
+
+.rowLabel {
+  display: block;
+  font-family: var(--face-semi);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: var(--lead-snug);
+  color: var(--ink-strong);
+}
+
+.rowWhen {
+  display: block;
+  margin-top: 0.1875rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ink-mute);
+}
+
+.amount {
+  padding: var(--step-3) 0;
+  vertical-align: top;
+  font-family: var(--face-semi);
+  /* Tabular figures so the column reads as a column, not a ragged list. */
+  font-variant-numeric: tabular-nums;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--ink-strong);
+}
+
+.terms {
+  margin-top: clamp(1.75rem, 3.5vw, 2.75rem);
+  padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-top: 3px solid var(--ink-strong);
+}
+
+.termsHead {
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 800;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-strong);
+  margin-bottom: var(--step-3);
+}
+
+.termsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: var(--step-3) clamp(1rem, 2.4vw, 2rem);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.termsList li {
+  position: relative;
+  padding-left: 1.125rem;
+  font-size: 0.875rem;
+  line-height: var(--lead-copy);
+  color: var(--ink-mute);
+}
+
+.termsList li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--ember-press);
+}
+
+/* 0.75rem at --ink-mute measures 5.28:1 on --pane-sink — small, but this is
+   legally material text and must stay above the 4.5:1 body floor. */
+.disclaimer {
+  margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--ink-mute);
+  max-width: 74ch;
+}
+
+@media (max-width: 560px) {
+  .rowHead {
+    padding-right: var(--step-2);
+  }
+}

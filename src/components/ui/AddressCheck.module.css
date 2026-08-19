@@ -1,0 +1,159 @@
+.wrap {
+  width: 100%;
+  max-width: 34rem;
+}
+
+.form {
+  display: flex;
+  align-items: stretch;
+  gap: var(--step-2);
+  padding: var(--step-2);
+  border-radius: var(--bend-pill);
+  background: var(--pane-base);
+  box-shadow: var(--lift-card-hi);
+}
+
+.field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline-start: var(--step-4);
+}
+
+.pin {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--ember-core);
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  padding: var(--step-3) var(--step-2) var(--step-3) var(--step-3);
+  border: none;
+  background: transparent;
+  font-size: var(--type-body);
+  color: var(--ink-strong);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--ink-faint);
+}
+
+.submit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--step-2);
+  flex-shrink: 0;
+  height: 3rem;
+  padding-inline: var(--step-5);
+  border-radius: var(--bend-pill);
+  background: var(--wash-cta);
+  box-shadow: var(--lift-cta);
+  color: var(--ink-invert);
+  font-weight: 600;
+  letter-spacing: var(--track-flat);
+  white-space: nowrap;
+  transition:
+    background var(--flow-quick) var(--ease-exit),
+    box-shadow var(--flow-quick) var(--ease-exit),
+    transform var(--flow-snap) var(--ease-exit);
+}
+
+.submit:hover {
+  background: var(--wash-cta-hover);
+  box-shadow: var(--lift-cta-hi);
+}
+
+.submit:active {
+  transform: scale(0.975);
+  background: var(--wash-cta-press);
+}
+
+.arrow {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--flow-quick) var(--ease-exit);
+}
+
+.submit:hover .arrow {
+  transform: translateX(3px);
+}
+
+.error,
+.ok {
+  margin-top: var(--step-3);
+  padding-inline: var(--step-4);
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+}
+
+.error {
+  color: #ffd9cc;
+  font-weight: 500;
+}
+
+.ok a,
+.error a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+/* ---- tones ---- */
+
+.onDark .ok {
+  color: var(--ink-invert-soft);
+}
+
+.onDark .ok strong {
+  color: var(--ink-invert);
+}
+
+.onLight .error {
+  color: var(--signal-bad);
+}
+
+.onLight .ok {
+  color: var(--ink-mute);
+}
+
+.onLight .form {
+  box-shadow: var(--lift-card);
+  border: 1px solid var(--rule-hair);
+}
+
+/* ---- responsive: stack below 560px so the input keeps a usable width ---- */
+
+@media (max-width: 560px) {
+  .wrap {
+    max-width: none;
+  }
+
+  .form {
+    flex-direction: column;
+    border-radius: var(--bend-xl);
+    padding: var(--step-3);
+  }
+
+  .field {
+    padding-inline-start: var(--step-3);
+    border-radius: var(--bend-lg);
+    background: var(--pane-sink);
+  }
+
+  .submit {
+    width: 100%;
+    height: 3.25rem;
+    justify-content: center;
+  }
+
+  .error,
+  .ok {
+    padding-inline: var(--step-2);
+  }
+}

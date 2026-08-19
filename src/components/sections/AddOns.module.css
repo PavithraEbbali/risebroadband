@@ -1,0 +1,180 @@
+/*
+ * A wide feature panel followed by a thin three-up row — structurally unlike
+ * both the equal plan columns above and the ruled tables below.
+ */
+
+.section {
+  padding-block: var(--bay-y);
+  background:
+    radial-gradient(58% 44% at 88% 6%, rgb(255 122 46 / 0.11) 0%, transparent 64%),
+    var(--pane-base);
+}
+
+.head {
+  max-width: 42rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.kicker {
+  display: block;
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ember-press);
+  margin-bottom: var(--step-3);
+}
+
+.heading {
+  font-family: var(--face-display);
+  font-size: clamp(1.875rem, 3.6vw, 3rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: var(--track-crush);
+  text-transform: uppercase;
+  color: var(--ink-strong);
+  margin-bottom: var(--step-3);
+}
+
+.lede {
+  font-size: var(--type-fine);
+  line-height: var(--lead-loose);
+  color: var(--ink-mute);
+}
+
+/* ---- Wi-Fi panel ---- */
+
+.wifi {
+  padding: clamp(1.25rem, 2.8vw, 2rem);
+  border-radius: var(--bend-card);
+  background: var(--pane-lift, #fff);
+  box-shadow: var(--lift-soft, 0 1px 2px rgb(0 0 0 / 0.06), 0 12px 32px rgb(0 0 0 / 0.07));
+}
+
+.wifiHead {
+  font-family: var(--face-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: var(--track-tight);
+  text-transform: uppercase;
+  color: var(--ink-strong);
+  margin-bottom: var(--step-3);
+}
+
+.wifiBody {
+  max-width: 62ch;
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+  color: var(--ink-mute);
+  margin-bottom: var(--step-4);
+}
+
+.wifiList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--rule-soft, rgb(0 0 0 / 0.1));
+}
+
+.wifiRow {
+  display: grid;
+  grid-template-columns: minmax(0, 7rem) minmax(0, 1fr) auto;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  padding-block: var(--step-3);
+  border-bottom: 1px solid var(--rule-soft, rgb(0 0 0 / 0.1));
+}
+
+.wifiPlan {
+  font-family: var(--face-semi);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ink-strong);
+}
+
+.wifiTier {
+  font-size: 0.875rem;
+  color: var(--ink-mute);
+}
+
+.wifiPrice {
+  font-family: var(--face-semi);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--ember-press);
+  white-space: nowrap;
+}
+
+.wifiWas {
+  color: var(--ink-mute);
+  font-weight: 600;
+  text-decoration-thickness: 1.5px;
+}
+
+.wifiNote {
+  margin-top: var(--step-4);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--ink-mute);
+}
+
+/* ---- thin extras row ---- */
+
+.extras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: clamp(0.875rem, 2vw, 1.5rem);
+  list-style: none;
+  padding: 0;
+  margin-top: clamp(1rem, 2.4vw, 1.75rem);
+}
+
+.extra {
+  padding-top: var(--step-3);
+  border-top: 3px solid var(--ink-strong);
+}
+
+.extraTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  margin-bottom: var(--step-2);
+}
+
+.extraTitle {
+  font-family: var(--face-semi);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: var(--track-tight);
+  color: var(--ink-strong);
+}
+
+.extraPrice {
+  font-family: var(--face-semi);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--ember-press);
+  white-space: nowrap;
+}
+
+.extraBody {
+  font-size: 0.875rem;
+  line-height: var(--lead-copy);
+  color: var(--ink-mute);
+}
+
+@media (max-width: 560px) {
+  .wifiRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .wifiTier {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}

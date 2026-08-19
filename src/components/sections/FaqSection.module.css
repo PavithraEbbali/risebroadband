@@ -1,0 +1,254 @@
+/* Dark, unlike the light sections either side of it. */
+.section {
+  padding-block: var(--bay-y);
+  background:
+    radial-gradient(90% 60% at 15% 0%, rgb(255 86 1 / 0.1) 0%, transparent 55%),
+    var(--pane-night);
+  color: var(--ink-invert);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: clamp(2.5rem, 6vw, 5rem);
+  align-items: start;
+}
+
+/* Head sits on the RIGHT here; every other section leads from the left. */
+.head {
+  position: sticky;
+  top: clamp(5.5rem, 10vw, 7rem);
+  order: 2;
+}
+
+.list {
+  order: 1;
+}
+
+/* --ember-text (#e85c0d) measured 3.98:1 against the new dark panel; the
+   lighter ramp step clears the 4.5:1 small-text floor. */
+.eyebrow {
+  color: var(--ember-lift);
+}
+
+.heading {
+  font-family: var(--face-display);
+  font-size: clamp(1.875rem, 2.6vw + 0.75rem, 2.875rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: var(--track-crush);
+  text-transform: uppercase;
+  color: var(--ink-invert);
+  margin-block: var(--step-3) var(--step-5);
+}
+
+.headingAccent {
+  color: var(--ember-lift);
+}
+
+.lede {
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+  color: #b9bcc4;
+  margin-bottom: var(--step-5);
+}
+
+.portrait {
+  position: relative;
+  margin: 0 0 var(--step-5);
+  aspect-ratio: 4 / 3;
+  border-radius: var(--bend-lg);
+  overflow: hidden;
+  background: var(--pane-sink);
+}
+
+.portraitImg {
+  object-fit: cover;
+  object-position: 50% 35%;
+}
+
+.portraitCap {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: var(--step-5) var(--step-4) var(--step-3);
+  /* Ramps early and hard — a simple transparent-to-0.85 fade left the caption
+     at 2.94:1 over the lit part of the photo. */
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(2 6 23 / 0.7) 40%,
+    rgb(2 6 23 / 0.95) 100%
+  );
+  color: var(--ink-invert);
+  font-family: var(--face-semi);
+  font-size: var(--type-fine);
+  font-weight: 600;
+}
+
+.helpline {
+  font-size: var(--type-fine);
+  color: #b9bcc4;
+}
+
+.phone {
+  font-weight: 700;
+  color: var(--ink-invert);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ember-core);
+  text-decoration-thickness: 2px;
+}
+
+/* ---- accordion ---- */
+
+.list {
+  border-top: 1px solid var(--rule-invert);
+}
+
+.item {
+  border-bottom: 1px solid var(--rule-invert);
+  transition: background var(--flow-base) var(--ease-exit);
+}
+
+.item[data-open] {
+  background: rgb(255 255 255 / 0.04);
+}
+
+.questionWrap {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.question {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  width: 100%;
+  padding: clamp(1.125rem, 2vw, 1.5rem) clamp(0.5rem, 1.5vw, 1.25rem);
+  text-align: left;
+  transition: color var(--flow-quick) var(--ease-exit);
+}
+
+.questionText {
+  font-family: var(--face-semi);
+  font-size: clamp(1.0625rem, 0.5vw + 0.95rem, 1.25rem);
+  font-weight: 700;
+  line-height: var(--lead-snug);
+  letter-spacing: var(--track-tight);
+  color: var(--ink-invert);
+}
+
+.question:hover .questionText {
+  color: var(--ember-lift);
+}
+
+/* Monospaced-feel index instead of an icon tile. */
+.qIndex {
+  flex-shrink: 0;
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-wide);
+  color: var(--ember-lift);
+  padding-top: 0.35em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- plus / minus toggle ---- */
+
+.toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  flex-shrink: 0;
+  margin-top: 0.15em;
+  border-radius: var(--bend-pill);
+  margin-left: auto;
+  border: 1.5px solid var(--rule-invert);
+  transition:
+    border-color var(--flow-quick) var(--ease-exit),
+    background var(--flow-quick) var(--ease-exit),
+    transform var(--flow-base) var(--ease-pop);
+}
+
+.question:hover .toggle {
+  border-color: var(--ember-core);
+  transform: scale(1.08);
+}
+
+.item[data-open] .toggle {
+  background: var(--ember-core);
+  border-color: var(--ember-core);
+}
+
+.bar {
+  position: absolute;
+  width: 0.75rem;
+  height: 2px;
+  border-radius: var(--bend-pill);
+  background: var(--ink-invert);
+  transition:
+    transform var(--flow-base) var(--ease-exit),
+    background var(--flow-quick) var(--ease-exit);
+}
+
+.barVertical {
+  transform: rotate(90deg);
+}
+
+.item[data-open] .bar {
+  background: var(--ink-invert);
+}
+
+/* Vertical bar collapses into the horizontal one — plus becomes minus. */
+.item[data-open] .barVertical {
+  transform: rotate(0deg);
+}
+
+/* ---- panel ---- */
+
+.panel {
+  overflow: hidden;
+}
+
+.questionText {
+  flex: 1;
+}
+
+.answer {
+  padding: 0 clamp(0.5rem, 1.5vw, 1.25rem) clamp(1.25rem, 2.5vw, 1.75rem);
+  padding-right: clamp(2.5rem, 5vw, 4rem);
+  font-size: var(--type-body);
+  line-height: var(--lead-copy);
+  color: #ced1d8;
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .head {
+    position: static;
+    order: 1;
+  }
+
+  .list {
+    order: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle,
+  .bar {
+    transition: none;
+  }
+}

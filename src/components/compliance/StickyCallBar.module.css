@@ -1,0 +1,76 @@
+/*
+ * Mobile only. Above 900px the header keeps the number in view, so a second
+ * fixed bar would be redundant chrome.
+ */
+.bar {
+  position: fixed;
+  z-index: 110;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  background: rgb(2 6 23 / 0.94);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  transform: translateY(110%);
+  visibility: hidden;
+  transition:
+    transform 260ms cubic-bezier(0.33, 1, 0.68, 1),
+    visibility 260ms;
+}
+
+.bar[data-shown] {
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  /* 2.5.8: the whole bar is the target, comfortably past 44px. */
+  min-height: 52px;
+  padding-inline: 1rem;
+  border-radius: 999px;
+  background: var(--ember-core, #ff5601);
+  color: #12060a;
+  font-family: var(--face-semi);
+  text-decoration: none;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.num {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+/* #12060a on #ff5601 measures 8.9:1; at 0.6875rem it still clears 4.5:1. */
+.sub {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  opacity: 0.82;
+}
+
+@media (min-width: 900px) {
+  .bar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    transition: none;
+  }
+}

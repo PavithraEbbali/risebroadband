@@ -1,0 +1,194 @@
+.footer {
+  background: var(--pane-night);
+  color: var(--ink-invert);
+  padding-block: clamp(3.5rem, 7vw, 5.5rem) var(--step-6);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* ---- top grid ---- */
+
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.lockup {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-size: clamp(1.75rem, 2.5vw, 2.125rem);
+}
+
+/* Matches the header treatment so the lockup reads consistently in both places. */
+.resellerTag {
+  margin-left: 0.875rem;
+  padding-left: 0.875rem;
+  border-left: 1px solid var(--ink-invert);
+  font-family: var(--face-semi);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-invert);
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.phone {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: var(--step-5);
+  font-family: var(--face-semi);
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--ember-core);
+  transition: color var(--flow-quick) var(--ease-exit);
+}
+
+.phone:hover {
+  color: var(--ember-lift);
+}
+
+.address {
+  margin-top: var(--step-4);
+  font-size: var(--type-fine);
+  font-style: normal;
+  line-height: var(--lead-copy);
+  color: var(--ink-invert-faint);
+}
+
+/* ---- link columns ---- */
+
+.col {
+  min-width: 0;
+}
+
+.colHead {
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-invert-faint);
+  margin-bottom: var(--step-4);
+}
+
+.colList {
+  display: flex;
+  flex-direction: column;
+  /* Gap trimmed because each link now carries its own tap height. */
+  gap: var(--step-1);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  /* WCAG 2.5.8 floor on both axes; raised to 44px on touch below. Width
+     matters for short labels like "FAQ", which measured 23px. */
+  min-height: 28px;
+  min-width: 24px;
+  font-size: var(--type-fine);
+  color: var(--ink-invert-soft);
+  transition:
+    color var(--flow-quick) var(--ease-exit),
+    padding-left var(--flow-quick) var(--ease-exit);
+}
+
+.link:hover {
+  color: var(--ember-lift);
+  padding-left: 3px;
+}
+
+/* ---- disclosure ---- */
+
+.disclosure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--step-3);
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--rule-night);
+  border-radius: var(--bend-lg);
+  background: rgb(255 255 255 / 0.03);
+  font-size: var(--type-micro);
+  line-height: 1.65;
+  color: var(--ink-invert-faint);
+}
+
+/* ---- base row ---- */
+
+.base {
+  padding-top: var(--step-5);
+  border-top: 1px solid var(--rule-night);
+  font-size: var(--type-micro);
+  color: var(--ink-invert-faint);
+}
+
+.copy {
+  margin: 0;
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 900px) {
+  .top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brandCol {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .top {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Touch devices get the full 44px recommendation on standalone nav targets. */
+@media (pointer: coarse) {
+  .link {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+
+/* §2.9 identity block. The legal entity name leads the address so a reviewer
+   checking advertiser identity finds it without hunting. */
+.entity {
+  display: block;
+  font-family: var(--face-semi);
+  font-weight: 700;
+  color: var(--ink-invert);
+  margin-bottom: 0.125rem;
+}
+
+.email {
+  display: inline-block;
+  margin-top: 0.25rem;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  word-break: break-word;
+}
+
+.email:hover {
+  color: var(--ember-lift);
+}

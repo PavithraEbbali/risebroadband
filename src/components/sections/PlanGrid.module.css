@@ -1,0 +1,549 @@
+/* Tinted, not plain white — separates it from the section below. */
+.section {
+  position: relative;
+  padding-block: var(--bay-y);
+  overflow: hidden;
+  background:
+    radial-gradient(58% 42% at 88% 4%, rgb(255 86 1 / 0.16) 0%, transparent 62%),
+    radial-gradient(52% 40% at 6% 34%, rgb(255 122 46 / 0.11) 0%, transparent 60%),
+    radial-gradient(70% 44% at 50% 108%, rgb(255 86 1 / 0.1) 0%, transparent 64%),
+    var(--pane-raise);
+}
+
+/* Wide ember wash behind the cards, blurred so it reads as light rather than
+   as a shape. Sits behind everything in the section. */
+.section::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 18%;
+  left: 50%;
+  width: min(96vw, 1500px);
+  height: 46%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+  background: radial-gradient(ellipse, rgb(255 122 46 / 0.3) 0%, rgb(255 86 1 / 0.1) 46%, transparent 72%);
+  pointer-events: none;
+}
+
+.section > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Centred head — the other sections run left- or right-aligned. */
+.head {
+  max-width: 46rem;
+  margin-inline: auto;
+  margin-bottom: clamp(2.25rem, 4vw, 3.25rem);
+  text-align: center;
+}
+
+/* Stacked lines with the middle one set in brand orange italic-weight, rather
+   than a single uppercase slab. */
+.heading {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--face-display);
+  font-size: clamp(2.25rem, 4.5vw, 3.75rem);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: var(--track-crush);
+  text-transform: uppercase;
+  color: var(--ink-strong);
+  margin-block: var(--step-3) var(--step-4);
+}
+
+.headingAccent {
+  font-style: normal;
+  color: var(--ember-press);
+}
+
+.lede {
+  max-width: 52ch;
+  margin-inline: auto;
+  font-size: var(--type-body);
+  line-height: var(--lead-loose);
+  color: var(--ink-mute);
+}
+
+/* ---- grid ---- */
+
+/*
+ * Asymmetric: the recommended plan is wider and lifted out of line, the two
+ * flanking plans sit lower and narrower. Deliberately not the equal 3-up grid
+ * the rest of the page would suggest.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.16fr) minmax(0, 0.92fr);
+  gap: clamp(1rem, 1.8vw, 1.5rem);
+  align-items: start;
+}
+
+.cell {
+  min-width: 0;
+}
+
+/* Carries the clip. Kept separate from .cell, which owns the viewport trigger
+   and must never be clipped — see the note in PlanGrid.tsx. */
+.wipe {
+  height: 100%;
+  will-change: clip-path, transform;
+  /* Padding gives the drop shadow somewhere to live while the clip is still
+     active during the wipe; the negative margin keeps layout unchanged. */
+  padding: 0 0 clamp(1rem, 2vw, 1.75rem);
+  margin-bottom: calc(clamp(1rem, 2vw, 1.75rem) * -1);
+}
+
+/* Flanking cards drop; the featured one rises. */
+.cell:not([data-featured]) {
+  margin-top: clamp(1.5rem, 3vw, 3rem);
+}
+
+.cell[data-featured] {
+  margin-top: 0;
+}
+
+/* ---- card ---- */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: clamp(1.75rem, 3vw, 2.75rem);
+  /* Borderless and floating — the rules and hairlines live in other sections. */
+  border: none;
+  border-radius: var(--bend-xl);
+  background: var(--pane-base);
+  box-shadow: var(--lift-float);
+  transition:
+    box-shadow var(--flow-base) var(--ease-exit),
+    transform var(--flow-base) var(--ease-exit);
+}
+
+/* Ember ring, drawn on a pseudo-element so it can fade independently of the
+   card's own shadow. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    inset 0 0 0 1.5px var(--ember-haze),
+    0 0 0 4px rgb(255 86 1 / 0.07);
+  transition: opacity var(--flow-base) var(--ease-exit);
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+/* Warm bloom rising from the base of the card. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset-inline: 8%;
+  bottom: -14%;
+  height: 45%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(28px);
+  background: radial-gradient(circle, rgb(255 86 1 / 0.3) 0%, transparent 70%);
+  transition: opacity var(--flow-easy) var(--ease-exit);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  box-shadow: var(--lift-deep);
+  transform: translateY(-8px);
+}
+
+/* Speed figure warms and nudges up with the card. */
+.card:hover .speed {
+  color: var(--ember-press);
+}
+
+.card[data-featured]:hover .speed {
+  color: var(--ink-invert);
+}
+
+.speed,
+.speedUnit {
+  transition:
+    color var(--flow-base) var(--ease-exit),
+    transform var(--flow-base) var(--ease-pop);
+}
+
+.card:hover .speedUnit {
+  transform: translateY(-3px);
+}
+
+/* Spec rows brighten as a set. */
+.specs {
+  transition: border-color var(--flow-base) var(--ease-exit);
+}
+
+.card:hover .specs {
+  border-color: var(--ember-haze);
+}
+
+.card[data-featured] {
+  padding-top: clamp(3.25rem, 5vw, 4.25rem);
+  padding-bottom: clamp(2.25rem, 4vw, 3.25rem);
+}
+
+.card[data-featured]::after {
+  box-shadow:
+    inset 0 0 0 1.5px rgb(255 255 255 / 0.4),
+    0 0 0 5px rgb(255 86 1 / 0.16);
+}
+
+.card[data-featured] {
+  background: var(--wash-featured);
+  border-color: transparent;
+  color: var(--ink-invert);
+  box-shadow: var(--lift-deep);
+}
+
+/* Sits INSIDE the card. It used to hang above the top edge on a
+   translateY(-50%), which the wipe wrapper's clip boundary cut off. */
+.badge {
+  position: absolute;
+  top: clamp(1rem, 2vw, 1.5rem);
+  right: clamp(1.5rem, 3vw, 2.25rem);
+  padding: var(--step-1) var(--step-4);
+  border-radius: var(--bend-pill);
+  background: var(--pane-night);
+  color: var(--ink-invert);
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: var(--lift-ink);
+}
+
+/* ---- speed ---- */
+
+.speedBlock {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--step-4);
+}
+
+.speedQualifier {
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  /* --ink-faint (#b3b3b3) measured 2.1:1 on white — nowhere near the 4.5:1
+     small-text floor. --ink-mute is 5.28:1. */
+  color: var(--ink-mute);
+}
+
+.card[data-featured] .speedQualifier {
+  color: rgb(255 255 255 / 0.88);
+}
+
+.speed {
+  display: flex;
+  align-items: baseline;
+  gap: var(--step-2);
+  font-family: var(--face-display);
+  font-size: clamp(3rem, 5vw, 4.25rem);
+  font-weight: 800;
+  line-height: var(--lead-crush);
+  letter-spacing: var(--track-crush);
+  color: var(--ink-strong);
+}
+
+.card[data-featured] .speed {
+  color: var(--ink-invert);
+}
+
+.speedUnit {
+  font-size: 0.42em;
+  font-weight: 700;
+  letter-spacing: var(--track-tight);
+  color: var(--ember-text);
+}
+
+.card[data-featured] .speedUnit {
+  color: var(--ink-invert);
+}
+
+/* ---- name ---- */
+
+.name {
+  font-family: var(--face-semi);
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: var(--track-tight);
+  color: var(--ink-body);
+  margin-bottom: var(--step-4);
+}
+
+.card[data-featured] .name {
+  color: var(--ink-invert);
+}
+
+/* ---- price ---- */
+
+.priceNote {
+  margin-top: var(--step-2);
+  font-size: var(--type-micro);
+  line-height: 1.4;
+  color: var(--ink-mute);
+}
+
+.card[data-featured] .priceNote {
+  color: rgb(255 255 255 / 0.94);
+}
+
+/* ---- specs ---- */
+
+.specs {
+  margin-block: var(--step-5);
+  padding-block: var(--step-5);
+  border-block: 1px solid var(--rule-hair);
+  display: flex;
+  flex-direction: column;
+  gap: var(--step-3);
+}
+
+.card[data-featured] .specs {
+  border-color: rgb(255 255 255 / 0.22);
+}
+
+.spec {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--step-4);
+  font-size: var(--type-fine);
+}
+
+.spec dt {
+  color: var(--ink-mute);
+  min-width: 0;
+}
+
+.card[data-featured] .spec dt {
+  color: rgb(255 255 255 / 0.94);
+}
+
+.spec dd {
+  display: flex;
+  align-items: baseline;
+  gap: var(--step-2);
+  font-weight: 700;
+  color: var(--ink-strong);
+  white-space: nowrap;
+  text-align: right;
+}
+
+.card[data-featured] .spec dd {
+  color: var(--ink-invert);
+}
+
+.wifiList {
+  font-weight: 500;
+  color: var(--ink-mute);
+}
+
+.card[data-featured] .wifiList {
+  color: rgb(255 255 255 / 0.94);
+}
+
+.wifiValue {
+  /* --ember-text (#e85c0d) is 3.52:1 on white — fine for display sizes, short
+     of the 4.5:1 floor at this 14px. --ember-press is the darkest ramp step
+     that still reads unambiguously orange. */
+  color: var(--ember-press);
+}
+
+.card[data-featured] .wifiValue {
+  color: var(--ink-invert);
+}
+
+/* ---- blurb + cta ---- */
+
+.blurb {
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+  color: var(--ink-mute);
+}
+
+.card[data-featured] .blurb {
+  color: rgb(255 255 255 / 0.94);
+}
+
+.cta {
+  margin-top: auto;
+  padding-top: var(--step-5);
+}
+
+/*
+ * The plan CTA carried its appearance from MagneticButton's `size="lg"` tone
+ * classes. §4 removed that component, so the styling lives here now — without
+ * it the anchor rendered as unstyled 40px text.
+ */
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  /* 2.5.5 comfortable target, well past the 2.5.8 AA floor. */
+  min-height: 52px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  background: var(--ink-strong);
+  color: var(--ink-invert);
+  font-family: var(--face-semi);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  transition:
+    background var(--flow-quick) var(--ease-exit),
+    transform var(--flow-quick) var(--ease-exit),
+    box-shadow var(--flow-quick) var(--ease-exit);
+}
+
+.ctaButton:hover {
+  background: var(--ember-press);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgb(255 86 1 / 0.3);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+}
+
+.ctaIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  transition: transform var(--flow-base) var(--ease-pop);
+}
+
+.ctaButton:hover .ctaIcon {
+  transform: rotate(-12deg) scale(1.1);
+}
+
+.card[data-featured] .ctaButton {
+  background: var(--pane-base);
+  color: var(--ember-press);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+}
+
+.card[data-featured] .ctaButton:hover {
+  background: var(--pane-raise);
+  box-shadow: 0 10px 26px rgb(0 0 0 / 0.24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaButton,
+  .ctaIcon {
+    transition: none;
+  }
+
+  .ctaButton:hover {
+    transform: none;
+  }
+}
+
+/* ---- every plan includes ---- */
+
+.includes {
+  margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  border-radius: var(--bend-xl);
+  background: var(--pane-raise);
+  border: 1px solid var(--rule-hair);
+}
+
+.includesLabel {
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: var(--step-4);
+}
+
+.includesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--step-3) clamp(1.5rem, 4vw, 3rem);
+}
+
+.include {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--step-2);
+  font-family: var(--face-semi);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+
+.tick {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--ember-core);
+  transition: transform var(--flow-quick) var(--ease-pop);
+}
+
+.include:hover .tick {
+  transform: scale(1.18) rotate(-6deg);
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Featured card leads on two-up so the recommendation still reads first. */
+  .cell:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 6vw, 2.5rem);
+  }
+
+  .cell:last-child {
+    grid-column: auto;
+  }
+
+  .spec {
+    flex-wrap: wrap;
+    gap: var(--step-1) var(--step-3);
+  }
+
+  .spec dd {
+    text-align: left;
+  }
+}

@@ -1,0 +1,256 @@
+/*
+ * Horizontal snap rail. Distinct from the floating plan cards above and the
+ * dark accordion below: four equal panels on one scrollable track, each with a
+ * photo, an inset numeral and copy directly beneath.
+ */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: var(--bay-y);
+  background:
+    radial-gradient(46% 38% at 4% 12%, rgb(255 86 1 / 0.13) 0%, transparent 62%),
+    radial-gradient(54% 40% at 96% 62%, rgb(255 122 46 / 0.12) 0%, transparent 62%),
+    var(--pane-base);
+}
+
+/* Blurred ember band running under the rail. */
+.section::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  bottom: 6%;
+  left: 50%;
+  width: min(90vw, 1400px);
+  height: 38%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  background: radial-gradient(ellipse, rgb(255 122 46 / 0.26) 0%, rgb(255 86 1 / 0.08) 48%, transparent 72%);
+  pointer-events: none;
+}
+
+/* ---- head: two columns, tight ---- */
+
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(1rem, 3vw, 2.5rem);
+  align-items: end;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.kicker {
+  display: block;
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ember-press);
+  margin-bottom: var(--step-3);
+}
+
+.heading {
+  font-family: var(--face-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--track-crush);
+  text-transform: uppercase;
+  color: var(--ink-strong);
+}
+
+/* --ink-faint measured 2.10:1 on white — under the 3:1 large-text floor.
+   --ink-mute is 5.28:1 and still reads as the quieter half. */
+.headingSoft {
+  color: var(--ink-mute);
+}
+
+.lede {
+  max-width: 46ch;
+  font-size: var(--type-fine);
+  line-height: var(--lead-loose);
+  color: var(--ink-mute);
+}
+
+/* ---- rail ---- */
+
+.railWrap {
+  position: relative;
+}
+
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: clamp(0.875rem, 1.6vw, 1.5rem);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--bay-x);
+  padding-bottom: var(--step-3);
+  /* Hide the scrollbar chrome; the track is snap-scrolled and drag-scrolled. */
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.panel {
+  scroll-snap-align: start;
+  min-width: 0;
+  will-change: transform, opacity;
+}
+
+.shot {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--bend-card);
+  overflow: hidden;
+  background: var(--pane-sink);
+  margin-bottom: var(--step-4);
+}
+
+/* Footer scrim behind the numeral. Measured 1.01:1 on panel 01 without it —
+   the numerals land on a bright window, sky and lamp across the four photos. */
+.shot::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 55%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgb(2 6 23 / 0.55) 45%,
+    rgb(2 6 23 / 0.92) 100%
+  );
+}
+
+.shotImg {
+  object-fit: cover;
+  transition: transform var(--flow-long) var(--ease-exit);
+}
+
+.panel:hover .shotImg {
+  transform: scale(1.06);
+}
+
+/* Numeral sits on the photo, bottom-left, on a soft scrim rather than floating
+   in the copy column. */
+.num {
+  position: absolute;
+  z-index: 2;
+  left: var(--step-4);
+  bottom: var(--step-3);
+  font-family: var(--face-display);
+  font-size: clamp(2.25rem, 3.5vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--track-crush);
+  color: var(--ink-invert);
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.85), 0 1px 3px rgb(0 0 0 / 0.9);
+}
+
+.panelTitle {
+  font-family: var(--face-semi);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: var(--lead-snug);
+  letter-spacing: var(--track-tight);
+  color: var(--ink-strong);
+  margin-bottom: var(--step-2);
+}
+
+.panelBody {
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+  color: var(--ink-mute);
+}
+
+/* ---- §2.7 closing call ---- */
+
+.close {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem 1.25rem;
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  text-align: center;
+}
+
+.closeCopy {
+  flex: 1 1 20rem;
+  max-width: 34rem;
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+  color: var(--ink-mute);
+  text-align: left;
+}
+
+.closeCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding-inline: 1.375rem;
+  border-radius: 999px;
+  background: var(--ink-strong);
+  color: var(--ink-invert);
+  font-family: var(--face-semi);
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: background var(--flow-quick) var(--ease-exit);
+}
+
+.closeCta:hover {
+  background: var(--ember-press);
+}
+
+.closeIcon {
+  width: 19px;
+  height: 19px;
+  flex: none;
+}
+
+.closeHours {
+  flex: 0 0 auto;
+  font-size: var(--type-micro);
+  font-weight: 600;
+  color: var(--ink-mute);
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 900px) {
+  .close {
+    justify-content: flex-start;
+  }
+
+  .head {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+
+@media (max-width: 720px) {
+  /* Panels become swipeable cards rather than shrinking to illegibility. */
+  .rail {
+    grid-auto-columns: 78%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shotImg,
+  .closeCta {
+    transition: none;
+  }
+}

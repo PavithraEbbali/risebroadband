@@ -1,0 +1,17 @@
+# §5.3 allowlist — one literal substring per line.
+#
+# A line here exempts any SOURCE LINE that contains it. Use the narrowest
+# possible string, and say why. Every entry is a standing claim someone must be
+# able to defend to Google or the carrier.
+
+# The disclosure copy has to name the thing it is disclaiming, so it necessarily
+# contains "official". That is the point — these lines DENY being the carrier.
+is not the official
+Is this the official
+are its official website, or that we are its customer service department.
+The official site is{' '}
+identity / "is this the official site"
+The official site is riseinternet.com.
+
+# The banned-word list itself, inside the linter.
+scripts/lint-copy.mjs

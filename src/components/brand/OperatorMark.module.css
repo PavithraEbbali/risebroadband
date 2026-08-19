@@ -1,0 +1,68 @@
+/*
+ * Monochrome by design — see the note in OperatorMark.tsx. Nothing in this file
+ * may reference the ember ramp: brand orange is the carrier's identity, and a
+ * recoloured carrier mark is still a carrier mark under §2.1.
+ */
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1;
+  /* Inherited by the tile border and both words. */
+  color: inherit;
+}
+
+.ink {
+  color: var(--ink-strong);
+}
+
+.invert {
+  color: var(--ink-invert);
+}
+
+/* `auto` deliberately sets nothing — it inherits whatever the caller animates. */
+
+/*
+ * Squared monogram tile. Rise's mark leads with a slanted bolt; this leads with
+ * an upright bordered square, which is about as far from that silhouette as a
+ * small mark gets.
+ */
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  height: 1.75em;
+  flex: none;
+  border: 2px solid currentColor;
+  /* Squared, not pill — the pill radius is used by every CTA on the site. */
+  border-radius: 0.28em;
+  font-family: var(--face-text);
+  font-size: 0.62em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  /* Optical centring: the cap-height block sits high inside the box. */
+  padding-top: 0.06em;
+}
+
+.word {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.22em;
+  /* Text face, not the condensed display face the carrier wordmark uses. */
+  font-family: var(--face-text);
+  font-size: 1em;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+/* Weight contrast carries the lockup in place of a decorative glyph. */
+.strong {
+  font-weight: 700;
+}
+
+.light {
+  font-weight: 400;
+  opacity: 0.82;
+}

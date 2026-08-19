@@ -1,0 +1,175 @@
+.band {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: clamp(2.5rem, 4vw, 3.5rem);
+  background: var(--pane-night);
+  color: var(--ink-invert);
+  border-block: 1px solid var(--rule-night);
+}
+
+.plate {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.plateImg {
+  object-fit: cover;
+  /* Holds the lit farmhouse and tower on the right where there is no copy. */
+  object-position: 62% 62%;
+}
+
+/* Light touch — the source art is already near-black across the text side. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(2 6 23 / 0.72) 0%,
+    rgb(2 6 23 / 0.55) 45%,
+    rgb(2 6 23 / 0.78) 100%
+  );
+}
+
+.states,
+.statesList,
+.statesNote {
+  position: relative;
+}
+
+/* Four uneven columns with hairline dividers — no cards, no tiles. */
+.figures {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  padding-top: clamp(1.5rem, 2.5vw, 2rem);
+  border-top: 1px solid var(--rule-invert);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  padding-left: clamp(0.75rem, 2vw, 1.5rem);
+  border-left: 1px solid var(--rule-invert);
+}
+
+.figureValue {
+  font-family: var(--face-display);
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 0.85;
+  letter-spacing: var(--track-crush);
+  color: var(--ink-invert);
+  font-variant-numeric: tabular-nums;
+}
+
+.figureUnit {
+  margin-top: var(--step-2);
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ember-lift);
+}
+
+.figureLabel {
+  margin-top: var(--step-3);
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+  color: #b9bcc4;
+}
+
+@media (max-width: 720px) {
+  .figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: clamp(1.75rem, 5vw, 2.5rem);
+  }
+}
+
+.states {
+  margin-top: clamp(1.5rem, 2.5vw, 2.25rem);
+  text-align: center;
+}
+
+.statesLabel {
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-invert-faint);
+  margin-bottom: var(--step-4);
+}
+
+.statesList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--step-2) var(--step-3);
+  margin-bottom: var(--step-5);
+}
+
+.state {
+  padding: var(--step-2) var(--step-4);
+  border-radius: var(--bend-pill);
+  border: 1px solid var(--rule-invert);
+  font-family: var(--face-semi);
+  font-size: var(--type-fine);
+  font-weight: 600;
+  color: var(--ink-invert-soft);
+  transition:
+    border-color var(--flow-quick) var(--ease-exit),
+    color var(--flow-quick) var(--ease-exit),
+    transform var(--flow-quick) var(--ease-exit);
+}
+
+.state:hover {
+  border-color: var(--ember-core);
+  color: var(--ink-invert);
+  transform: translateY(-2px);
+}
+
+.statesNote {
+  max-width: 74ch;
+  margin-inline: auto;
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+  color: var(--ink-invert-faint);
+}
+
+
+/* Static replacement for the marquee. */
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  list-style: none;
+  padding-block: var(--step-4);
+  margin: 0;
+}
+
+.fact {
+  padding: 0.375rem 0.875rem;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+  font-family: var(--face-semi);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  /* 0.88 white over the darkened coverage plate measures 12.6:1. */
+  color: rgb(255 255 255 / 0.88);
+  white-space: nowrap;
+}
+
+.fact[data-kind='stat'] {
+  border-color: rgb(255 156 90 / 0.55);
+  color: var(--ember-lift, #ff9c5a);
+}

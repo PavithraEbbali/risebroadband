@@ -1,0 +1,1596 @@
+# ai.wing — running changelog
+
+Every change to this project gets an entry: date, what changed, files touched, why.
+Newest first.
+
+---
+
+## 2026-08-19 — Fix: final CTA button thrown to the section edge
+
+**What changed**
+
+`FinalCta`'s `.formWrap` was `display: flex; justify-content: center`. That was right when it
+wrapped a single `<AddressCheck>`. The call-primary rework earlier today put **two** children
+inside it — the call button and the hours/routing line — so the flex row laid them side by side
+and shoved the button out to the left edge of the section while the meta text ran on beside it.
+Everything else in the section is centred, so it read as broken layout.
+
+Changed to `flex-direction: column; align-items: center`, which stacks and centres them. Also
+capped `.callMeta` at `46ch` so the routing sentence wraps into a readable block under the
+button instead of running the full section width.
+
+Worth remembering: this wrapper is styled for its *children*, not for itself. Adding a third
+child to `.formWrap` will need the same look.
+
+**Files touched**
+`src/components/sections/FinalCta.module.css`.
+
+**Verified**
+Button, meta line and ZIP toggle all measure 0px offset from the section centre at 1440 / 768 /
+390, stacked in that order. `tsc` clean; `lint-copy` clean; static export builds 18 routes;
+0 horizontal overflow across 10 routes x 5 widths.
+
+---
+
+## 2026-08-19 — §2.1 header logo swap; §4 strip confirmed final
+
+**What changed**
+
+**Fix 1 — carrier wordmark out of the header (§2.1)**
+
+New `OperatorMark` replaces `RiseLogo` in `SiteHeader`. The `Authorized / Reseller` tag that sat
+beside it is gone too — that association belongs in the §2.0 disclosure bar directly above, which
+states it in words and is left byte-for-byte unchanged.
+
+§2.1 bans carrier logos *and carrier-logo-derived marks*. "Derived" is the constraint that
+actually shapes this component: recolouring the carrier mark, simplifying it, or rebuilding it in
+the same typographic register all still read as the carrier's identity. So `OperatorMark` shares
+nothing with Rise Internet's mark by construction:
+
+- **No orange.** Rise's mark is defined by its brand orange, so this one is monochrome and
+  inherits `color` from its parent. `OperatorMark.module.css` must never reference the ember
+  ramp — a recoloured carrier mark is still a carrier mark. There is a comment at the top of the
+  file saying so.
+- **No bolt, no stacked word-over-rule lockup.** Those two shapes *are* the Rise mark. This is an
+  upright bordered monogram tile on a single baseline. The tile is squared (0.28em), deliberately
+  not the pill radius every CTA on the site uses.
+- **Different face.** Rise's wordmark is the condensed display face in caps; this is the
+  normal-width text face in sentence case, with weight contrast (700/400) carrying the lockup in
+  place of a decorative glyph.
+
+Content derives from `site.brandName` — initials for the tile, first word bold and the remainder
+light. Falls back to a neutral `Operator` placeholder if the entity is unset. It must never
+render empty and must never silently fall back to the carrier's name.
+
+`tone="auto"` is retained, so the mark still cross-fades white-over-hero to ink-over-solid-bar on
+the header's existing scrolled transition.
+
+**Header height did not change**, which was the specific risk flagged: 140 / 125 / 105 / 106 /
+118px at 360 / 390 / 480–900 / 1024 / 1440. The disclosure bar still wraps to three lines at
+360px and two at 390px, and the hero's flat `8.5rem` / `10rem` mobile padding still clears it —
+gap to the hero eyebrow is 54px at 360px, 69px at 390px, never negative. The `data-scrolled`
+white-bar state was re-checked separately; the mark reads correctly in both.
+
+Brand link is 44×148px at 360px with 132px of clearance to the burger.
+
+**Related bug fixed in the footer.** The footer's `RiseLogo` was passing
+`label={site.resellerName}`, which after this session's entity rename resolves to `Peak Connect`
+— so a screen reader announced "Peak Connect" over Rise Internet glyphs. Now labelled
+`site.carrierName`. The footer keeps the carrier mark deliberately: it is used there under
+authorization, tagged "Authorized Reseller", directly above the operator's legal entity and the
+§7.5 attribution line. §2.1's ban is header-scoped.
+
+**Fix 2 — §4 strip confirmed final, no restoration**
+
+Audited for dead code. No component files for the banned effects remain — mesh gradient, mouse
+parallax, glowing dots and network patterns were fully deleted in the previous pass, not merely
+unmounted. Also verified: no orphaned `.module.css` without a matching `.tsx`, and no unmounted
+components anywhere in `src/components`.
+
+Two stale comments corrected. These matter more than they look — both described behaviour that
+no longer exists, in the present tense, which is exactly how a future edit gets misled:
+
+- `globals.css` claimed "Lenis applies its own offset for same-page clicks", implying the
+  `scroll-margin-top` rule only mattered for cross-route hashes. Scrolling is entirely native now
+  and the rule applies to both.
+- `trust.ts` called `marqueeItems` a "Marquee payload". It renders as a static wrapped list. The
+  export name is kept — it is referenced across the trust band and its contents never depended on
+  the presentation — but the comment now says so explicitly.
+
+The three remaining mentions of removed libraries in `src` are intentional past-tense notes
+explaining *why* something was removed, and should stay.
+
+**Files touched**
+`src/components/brand/OperatorMark.tsx` + `.module.css` (new),
+`src/components/layout/SiteHeader.tsx` + `.module.css` (mark swapped, `.resellerTag` rules
+removed including the 640px override), `src/components/layout/SiteFooter.tsx` (logo label),
+`src/app/globals.css` and `src/lib/trust.ts` (stale comments).
+
+`RiseLogo` is retained — still used by the footer.
+
+**Not touched, per instruction:** `site.ts` TFN, entity name, address and email. Those still need
+real operator values and are being handled separately.
+
+**Verified**
+`tsc --noEmit` clean; `lint-copy` clean; static export builds 18 routes. In the built
+`out/index.html`: header contains `OperatorMark` and no `RiseLogo`, no "Authorized Reseller" tag,
+disclosure text intact, brand `aria-label="Peak Connect home"`; footer `RiseLogo` labelled
+"Rise Internet". Wordmark contrast 20.17:1 (strong) / 13.34:1 (light) over the hero and 15.6:1 /
+9.55:1 on the scrolled bar. Reduced-motion 0 hidden elements; CLS 0.0016; 0 horizontal overflow
+across 10 routes x 5 widths; plan CTAs 52px; sticky mobile call bar reveals correctly.
+
+---
+
+## 2026-08-19 — MASTER STRUCTURE SPEC v1.2 conformance pass
+
+**What changed**
+
+Audited the build against the carrier-reseller master spec and implemented every gap. Grouped by
+spec section.
+
+**§2.0 / §2.1 — Top disclosure bar (was missing entirely)**
+New `TopDisclosureBar` renders `Independent Authorized Reseller of Rise Internet® — Not Rise
+Internet.` It is server-rendered, not dismissible, and nothing about it depends on hydration,
+scroll position or a cookie choice.
+
+It lives *inside* `SiteHeader`, above the nav row — not above the header in `layout.tsx`, which is
+where it started. The header is `position: fixed; top: 0`, so a sibling bar above it was painted
+over: the logo was clipped in half and the nav row lost most of its height. Nesting it in the
+fixed header also means the disclosure is now permanently on screen rather than only at the top
+of the page.
+
+Consequence to remember: **the header's height is now variable.** The disclosure sentence wraps to
+two lines under ~480px and three under ~380px, taking the header from 106px to ~140px. The hero's
+top padding used a `vw`-based clamp, which *shrinks* exactly where the header *grows* — so the
+hero eyebrow rendered underneath the header at 360–390px. Mobile padding is now a flat `8.5rem`,
+with `10rem` below 430px. Any future change to that sentence must be re-measured at 360px.
+`section[id] { scroll-margin-top }` was raised to `clamp(7.25rem, 9vw, 8rem)` for the same reason.
+
+**§2 global — `data-call-cta` on every sales `tel:` link**
+Was 15 tel: links, 0 with the attribute. Now every sales call link carries it, and §8.6 fires
+conversions from one delegated listener on `[data-call-cta]` rather than per-button handlers — so
+a new call button anywhere on the site is tracked the moment it ships.
+
+Two deliberate exceptions, both correct: the carrier support number in the hero routing note and
+in `service-fulfillment` link `tel:` but carry **no** `data-call-cta`. They are not sales leads;
+firing a conversion on them would poison the call data. `service-fulfillment` also had a real bug
+— the href was the reseller TFN while the label read the carrier's number. Fixed.
+
+**§2.2 — Hero rebuilt as a phone-lead hero**
+Added the disclosure eyebrow, and made tap-to-call the *primary* CTA with the number rendered as
+visible text rather than hidden behind a verb. Added staffed-hours microcopy and "New orders only"
+support routing so an existing customer is sent to the carrier instead of consuming a sales call.
+The ZIP checker is demoted to a `<details>` — it cannot answer serviceability (the carrier
+qualifies address by address) so it hands off rather than claiming a result it cannot know.
+
+**§2.4 / §2.5 / §2.6 — three missing sections**
+- `AddOns` (VAS): prices every add-on. Wi-Fi is rendered per-plan because its price genuinely
+  differs by tier — free on 1 Gbps, half price on 500 Mbps, list on 150 Mbps.
+- `FinePrint`: FCC-Broadband-Facts-style cost grid, split recurring / one-time / conditional.
+  Every figure is verbatim from the carrier's Additional Fees disclosure (scrape-report §3).
+  Deliberately the plainest block on the page — no photography, no entrance animation.
+- `WhyOrderThroughUs`: why order through *this operator*, not why choose the carrier. Claims no
+  exclusive pricing and no private discount, because there is none.
+
+**§2.7 — How It Works cut from 4 steps to 3, ending in the call**
+Step 2 was literally titled `A local technician surveys` — a §5.1 banned phrase. Restructured to
+Call → We confirm plan and real cost → Technician installs, plus a closing call CTA.
+
+**§2.8 — FAQ is now the last content section**
+`FinalCta` moved above `FaqSection`. Running order is Hero → Plans → FinePrint → AddOns →
+TrustBand → WhyOrderThroughUs → HowItWorks → FinalCta → FAQ.
+
+**§2.9 / §7.5 — Footer**
+Added the legal entity name and email (Google Misrepresentation wants all four of entity, address,
+phone, email) and the trademark attribution line.
+
+**§2.10 — Sticky mobile call bar (was missing)**
+Appears after 520px of scroll so it never covers the hero's own CTA. Hidden above 900px, where the
+header already keeps the number in view.
+
+**§3 — Accessible price lockup**
+New `PriceLockup`. The visual price row is `aria-hidden` and a generated `sr-only` sentence states
+the same facts in prose — read literally, the old markup announced "49 dot 99 29 dot 99 slash m
+o". Both halves are built from the same `plan` record so they cannot drift. Added the step-up
+line: a visitor who misses that the rate is $20 higher without AutoPay has been shown half a price.
+
+**§4 — Animation strip**
+Removed, all named bans: Lenis smooth scroll, three.js, 3D tilt + glare cards, magnetic buttons,
+the infinite marquee, pointer parallax, the animated mesh/aurora wash, Ken Burns drift, and the
+scattered glowing dots and network-node clusters in the hero.
+
+`HeroBackground` is now photograph + contrast scrim + static grain, with **no client JavaScript at
+all**. GSAP was used in exactly one place after that, so `HowItWorks` was converted to Framer and
+GSAP was uninstalled. Dependencies went from 7 to 5: framer-motion, next, react, react-dom.
+**Measured effect: LCP 1024ms → 600ms.**
+
+WARNING: this reverses several hero treatments requested earlier in the project (mesh gradient,
+mouse parallax, glowing dots, network patterns). They were removed because the spec bans them by
+name, not because they stopped working. Restoring any of them is a revert of `HeroBackground.tsx`
+and its stylesheet.
+
+Regression this caused, now fixed: `.ctaButton` on the plan cards inherited its appearance from
+`MagneticButton`'s `size="lg"` tone classes. Deleting that component left the anchor unstyled at
+40px tall. It now owns its styles and measures 52px.
+
+**§5.1 / §5.3 — Copy linter**
+New `scripts/lint-copy.mjs` + `scripts/lint-allowlist.txt`, wired into `npm run build` so a banned
+phrase fails the build rather than shipping. Rules cover carrier-identity claims, unverifiable
+superlatives, manufactured urgency, unsupportable service claims, and unreplaced placeholders.
+
+Fixed the phrases it caught: `US-based` (x6, including page metadata), `No hidden fees`, and
+`local technician`. Disclaimer copy that must *name* what it denies ("is not the official...") is
+allowlisted with the narrowest possible substrings.
+
+**§7.2 — Ninth legal page**
+Added `/do-not-sell` (CPRA "Do Not Sell or Share My Personal Information"). The obligation is
+triggered by the ad stack, not by intent: sharing identifiers with Google Ads is a "share" under
+Cal. Civ. Code 1798.140(ah). No form on the page on purpose — this is a static export with no
+server, so a form could not deliver a request. It offers GPC (honoured automatically) and email.
+
+**§8.1 — Static export**
+`output: 'export'`, `trailingSlash: true`, `images.unoptimized: true`. `robots.ts` and `sitemap.ts`
+needed `export const dynamic = 'force-static'` or the build fails collecting page data. Build emits
+18 prerendered routes.
+
+**§8.3 — Added `public/llms.txt`** with plans, real total cost, and explicit qualifications for AI
+systems (availability is not ZIP-derivable; no reviews exist, so any rating is fabricated).
+
+**§8.6 — Consent Mode v2**
+New `Analytics`. Consent defaults to granted (US-only funnel) in a `beforeInteractive` script so
+the default is in the dataLayer before gtag.js loads, then downgrades on GPC or DNT. Inert until
+`site.gtagId` is a real `AW-` id.
+
+**§10 — FAQ 5 to 9 questions**, covering every required archetype. All nine already existed in
+`faqLibrary`; only `FEATURED_IDS` changed, and `faqItems` still derives from it so the DOM and the
+FAQPage schema cannot drift.
+
+**Schema — `LocalBusiness` to `Organization`**
+LocalBusiness asserts premises customers visit and makes the entity eligible for local-pack
+placement. This is a telephone sales operation for someone else's network; claiming it would be
+misrepresentation and would invite exactly the "is this the carrier's local office?" confusion the
+disclosure architecture exists to prevent. Also fixed `openingHoursSpecification`, which claimed
+00:00-23:59 while the line is staffed 8am-10pm.
+
+**Files touched**
+`src/lib/site.ts` (rewritten around §8.2 constants), `src/lib/fineprint.ts` (new),
+`src/lib/{faq,nav,legalNav,plans,trust,schema}.ts`,
+`src/components/compliance/{TopDisclosureBar,StickyCallBar,Analytics}.*` (new),
+`src/components/sections/{FinePrint,AddOns,WhyOrderThroughUs}.*` (new),
+`src/components/ui/PriceLockup.*` (new), `src/app/do-not-sell/page.tsx` (new),
+`scripts/lint-copy.mjs` + `scripts/lint-allowlist.txt` (new), `public/llms.txt` (new),
+`src/components/sections/{Hero,PlanGrid,HowItWorks,TrustBand,FinalCta}.*`,
+`src/components/layout/{SiteHeader,SiteFooter}.*`, `src/app/{layout,page,robots,sitemap}.*`,
+`src/app/globals.css`, `next.config.mjs`, `package.json`.
+
+**Deleted** (all §4 bans or orphaned by earlier section removals): `SmoothScroll`, `VortexWebGL`,
+`VortexField`, `VortexCanvas2D`, `HeroPlate`, `HeroAtmosphere`, `TiltCard`, `MagneticButton`,
+`Marquee`, `Parallax`, `DrawPath`, `MeshSection`, `WhyRise`, `useMotionProfile`.
+
+**Verified**
+`tsc --noEmit` clean; `lint-copy` clean; static export builds 18 routes; LCP 600ms; CLS 0.0015;
+reduced-motion 0 hidden elements; 0 horizontal overflow across 10 routes x 5 widths
+(360/390/768/1024/1440); all sales `tel:` links carry `data-call-cta` and the two carrier support
+links correctly do not; plan CTA 52px, all controls >= 24px (WCAG 2.5.8 AA).
+
+**Two blockers the operator must resolve before any ad spend** — see the header comment in
+`src/lib/site.ts`:
+1. `entityLegalName` / address / email are placeholders. They must be the real registered entity
+   and must match the Google Ads verified-advertiser identity string-for-string (§7.1).
+2. `tfnDisplay` / `tfnE164` are placeholders. The number previously used site-wide,
+   `1-844-411-7473`, is **Rise Internet's own published support line** — routing order calls there
+   fails §12.4 (agents must answer with the reseller greeting) and poisons conversion data. §8.2
+   requires a TFN unique to this site and program.
+
+---
+
+## 2026-08-06 — Responsive verification pass; two real bugs fixed
+
+**What changed**
+Ran the site at 375 / 768 / 1024 / 1440 and fixed what the audit found.
+
+- **Bug: mobile menu button was off-screen at 375px.** The header CTA was still rendering on
+  phones, pushing the burger to x=408 in a 375px viewport — unreachable. Cause: `SiteHeader`'s
+  `.cta { display: none }` and `MagneticButton`'s `.shell { display: inline-flex }` have equal
+  specificity, so the later-loaded module won on source order. Additionally the button's wrapper
+  `<span class="field">` was never targeted, so hiding the anchor alone would not have collapsed
+  the layout. Fixed by wrapping the button in a header-owned `.ctaWrap` span and hiding that,
+  which no other stylesheet can override. Also raised the hide threshold to 860px and reduced the
+  wordmark size below 640px.
+- **Bug: tablets were loading the WebGL scene.** The `compact` gate was `max-width: 767px`, so a
+  768px tablet got the full Three.js particle scene. Added a separate `handheldQuery`
+  (`max-width: 1024px`) and a `!coarse` condition used only for the WebGL gate, so tablets and
+  touch devices now fall back to the 2D canvas. Layout breakpoints are unchanged.
+
+**Files touched**
+`src/components/layout/SiteHeader.tsx` · `SiteHeader.module.css` · `src/lib/useMotionProfile.ts`
+
+**Verification**
+- Horizontal overflow: none at any of the four widths (audit walks every element and ignores
+  those inside `overflow-x` clipping ancestors, so the marquee track is correctly not counted).
+- Canvas selection on fresh load: 375 → 2D, 768 → 2D, 1024 → 2D, 1440 → WebGL. Confirmed by
+  probing whether the mounted canvas will yield a 2D context.
+- Grid collapse: plans 3→2→1, install steps 4→2→1, mesh features 4→3→2→1, footer 4→2→1.
+- Header nav swaps to the burger drawer at ≤1100px; burger sits fully inside the viewport at 375.
+- FAQ accordion: 18 items, first open by default, `aria-expanded` toggles correctly and opening
+  one closes the other.
+- Reduced-motion guard confirmed present in the shipped stylesheet:
+  `[data-reveal] { opacity: 1 !important; transform: none !important; clip-path: none !important; }`
+  across 17 revealed elements.
+- SSR HTML (no JS) contains all three prices, the AutoPay disclaimer, the reseller disclosure and
+  the full JSON-LD graph — the page is fully crawlable without executing any animation code.
+- All 8 legal routes return HTTP 200 with 2,000–3,500 words each.
+- No console errors. `tsc --noEmit` clean, `next build` green, 14/14 static.
+
+---
+
+## 2026-08-06 — Legal routes, SEO surface, first green build
+
+**What changed**
+Authored the eight reseller policy pages as real routes with full substantive content (no
+placeholder text), added the SEO/crawl surface, and got the project to a clean production build.
+
+- Built `LegalShell`, a shared chrome for policy pages: header with breadcrumb + last-updated,
+  prose styling, sibling-policy sidebar, contact block.
+- Wrote all eight policies with genuine content:
+  - `/disclaimer` — reseller status, Rise Broadband → Rise Internet rename, pricing accuracy,
+    speed-claim limits, availability caveats, liability limitation.
+  - `/trademarks` — nominative fair use rationale, third-party mark attribution (Rise, eero,
+    Wi-Fi Alliance), no-endorsement statement, rights-holder contact route.
+  - `/privacy-policy` — collection/use/sharing/retention, CCPA-style rights incl. appeal, GPC
+    honoured, explicit "we never collect SSN/DOB/card data" carve-out.
+  - `/cookies-policy` — three categories with per-cookie purpose/duration tables, consent
+    controls, GPC.
+  - `/tcpa-policy` — prior express written consent mechanics, calling hours, STOP/HELP, internal
+    DNC list with 10-business-day/5-year commitments.
+  - `/marketing-policy` — advertising standards, incl. an explicit no-manufactured-urgency rule
+    and a no-fabricated-reviews rule.
+  - `/service-fulfillment` — the full order→install→cancel lifecycle plus the complete published
+    fee table.
+  - `/pci-dss` — out-of-scope position (we never touch card data) and the controls we hold anyway.
+- Added `sitemap.ts`, `robots.ts`, and a branded `not-found.tsx`.
+- Added `.claude/launch.json` for the dev server.
+
+**Files touched**
+`src/components/layout/LegalShell.tsx` · `LegalShell.module.css` ·
+`src/app/{disclaimer,trademarks,privacy-policy,cookies-policy,tcpa-policy,marketing-policy,service-fulfillment,pci-dss}/page.tsx` ·
+`src/app/sitemap.ts` · `src/app/robots.ts` · `src/app/not-found.tsx` · `.claude/launch.json`
+
+**Why**
+Step 3 required eight separate legal routes with real content, and required `/disclaimer` and
+`/trademarks` to state the independent-reseller position explicitly. Ad platforms check
+destination pages for exactly this, so thin or templated policy text would have been a liability
+rather than a formality.
+
+**Verification** — `npx tsc --noEmit` clean; `npx next build` succeeds, 14/14 routes prerendered
+static. Home first-load JS 213 kB with Three.js correctly excluded (lazy chunk).
+
+---
+
+## 2026-08-06 — Page build: sections, motion system, hero WebGL
+
+**What changed**
+Built the single-page site and the animation layer.
+
+- **Token architecture** (`globals.css`) — original naming scheme, deliberately not a mirror of
+  the source site's variable structure: `--ember-*` (brand), `--ink-*`, `--pane-*`, `--rule-*`,
+  `--lift-*` (elevation), `--wash-*` (gradients), `--flow-*` (motion), `--bend-*` (radii),
+  `--step-*` (spacing), `--type-*` (fluid type), `--tier-*` (z-ladder).
+- **Capability gate** (`useMotionProfile.ts`) — single source of truth for reduced-motion, coarse
+  pointer, compact viewport, WebGL availability and low-power heuristics. Every animated component
+  reads from it rather than sniffing independently, so fallbacks stay consistent.
+- **Motion primitives** — `RevealText` (word/char stagger through an overflow mask, full string
+  exposed to AT via sr-only), `Reveal`, `Parallax`, `ClipWipe`, `StaggerGrid`/`StaggerItem`,
+  `MagneticButton` (shell and label track at different strengths for parallax depth), `TiltCard`
+  (spring-smoothed 3D tilt + pointer-tracking glare), `DrawPath` (scrubbed SVG stroke draw of a
+  fixed-wireless relay topology), `Marquee` (duplicated track, -50% translate for a seamless seam).
+- **Lenis + GSAP** (`SmoothScroll.tsx`) — Lenis registered with `ScrollTrigger.scrollerProxy`,
+  driven off GSAP's ticker so both libraries share one clock; anchor clicks routed through Lenis.
+  Disabled entirely under reduced motion.
+- **Hero ambient** — `VortexWebGL` (2,600-point GPU-animated spiral, additive blend, accretion
+  ring, IntersectionObserver + visibility pausing, DPR capped at 1.75) with `VortexCanvas2D`
+  fallback (140 particles, 30fps throttle, DPR 1.5). `VortexField` picks between them; renders
+  nothing during SSR so it can never delay LCP.
+- **Sections** — Hero (address check + reseller disclosure near hero), PlanGrid (tilt cards),
+  TrustBand (marquee + crawlable state list), MeshSection (eero 7 specs + 7 features), HowItWorks
+  (scroll-scrubbed 4-card assembly + SVG draw), WhyRise (count-up stats), FaqSection (accordion),
+  FinalCta. Header with scroll-reactive chrome and clip-path mobile drawer; footer with full nav.
+- **Structured data** (`schema.ts`) — one `@graph`: LocalBusiness, WebSite, BreadcrumbList, three
+  Product/Offer records, FAQPage.
+
+**Files touched**
+`src/app/{layout,page,globals.css}` · `src/lib/{site,plans,trust,faq,mesh,legalNav,schema,useMotionProfile}.ts` ·
+`src/components/motion/*` · `src/components/hero/*` · `src/components/sections/*` ·
+`src/components/layout/{SiteHeader,SiteFooter}.tsx` · `src/components/ui/AddressCheck.tsx`
+
+**Why**
+Steps 2, 4 and 5. Two decisions are worth recording because they are not obvious from the code:
+
+1. **No testimonials section.** The source site publishes no reviews anywhere. Rather than invent
+   reviewer names and dates, that slot carries a marquee of sourced facts and the published
+   coverage footprint. `schema.ts` deliberately omits `AggregateRating`/`Review` for the same
+   reason.
+2. **No urgency copy anywhere.** The struck-through plan prices are the ongoing $20 AutoPay
+   discount, not a limited-time promotion — `listPrice - price === 20` on all three tiers. The
+   source publishes no expiry date or intro term, so none is asserted. `plans.ts` carries a
+   comment warning against adding one.
+
+---
+
+## 2026-08-06 — Step 1: source scrape and extraction
+
+**What changed**
+Scraped risebroadband.com and extracted design tokens, pricing and content before writing any code.
+
+- Discovered the site **301-redirects to riseinternet.com** — the brand was renamed from Rise
+  Broadband to Rise Internet. Legacy `rise-broadband-*` slugs survive in legal URLs, confirming a
+  rebrand rather than a domain change.
+- Bot protection required a real headless-browser render: `sitemap.xml` returns 403 to plain
+  clients and same-origin `fetch()` returns a 202 challenge. All data came from genuine navigation
+  of the hydrated DOM.
+- Extracted the live token system from computed CSS custom properties: brand ramp (`#ff5601` core),
+  neutrals, gradients, the Barlow / Barlow Condensed / Barlow Semi Condensed superfamily with
+  loaded weights, fluid type scale, spacing, radii, the 4-stop float shadow, and motion easings.
+- Captured plans verbatim from the homepage and `/compare-plans`, the eero 7 spec sheet and
+  disclaimer from `/advanced-wifi`, all 24 Q&As from `/faqs`, trust figures from `/about`, the
+  10-state footprint from `/areas-we-serve`, and the complete fee schedule from
+  `/legal/additional-fees-disclosure-statement`.
+
+**Files touched** `docs/scrape-report.md`
+
+**Why**
+Step 1 required showing extraction before building. The report also documents eight items that
+could **not** be confirmed and must not be invented — most importantly the total absence of
+customer reviews on the source site, the absence of any promotional end date, and the absence of
+separate fixed-wireless vs fiber pricing.
+
+---
+
+## 2026-08-07 — Content trim and hero/header simplification
+
+**What changed**
+
+Requested removals:
+- Removed the fixed-wireless topology diagram (animated SVG + caption) from the "How it works"
+  section, along with its `.diagram` / `.svg` / `.caption` styles and the 768px breakpoint that
+  only served it. `DrawPath` itself is retained in the motion library but is now unreferenced.
+- Removed the long pricing-disclaimer paragraph from below the plan grid, plus its `.disclaimer`
+  rule and the now-unused `PRICING_DISCLAIMER` import. The constant still lives in `lib/site.ts`
+  and is still rendered in full on `/disclaimer`.
+- Reduced the FAQ from 18 questions to 5. The full authored set is retained as `faqLibrary`; a
+  `FEATURED_IDS` list selects the five that render, and `faqItems` is derived from it so the
+  accordion and the FAQPage structured data can never drift apart. Selected: who we are, real
+  monthly cost, contracts, what fixed wireless is, and how to check availability.
+- Removed the reseller-disclosure pill and its "Read the full disclosure" link from the hero,
+  plus the `.disclosure*` styles and the 480px rule that only served it.
+- Removed the hero's ambient particle vortex (`VortexField`) and the `.ambient` layer. The hero
+  background is now the static base gradient plus the `.veil` ember bloom. `VortexField`,
+  `VortexWebGL` and `VortexCanvas2D` remain in the tree but are unreferenced, so Three.js no
+  longer loads on any route.
+- Removed the "Check availability" button from the sticky header, plus its `.ctaWrap` wrapper and
+  the 860px breakpoint that hid it. Header now carries brand, nav, phone and the burger.
+
+**Files touched**
+`src/components/sections/HowItWorks.tsx`, `HowItWorks.module.css`,
+`src/components/sections/PlanGrid.tsx`, `PlanGrid.module.css`,
+`src/components/sections/Hero.tsx`, `Hero.module.css`,
+`src/components/layout/SiteHeader.tsx`, `SiteHeader.module.css`,
+`src/lib/faq.ts`
+
+**Why**
+All six changes were explicitly requested. Two were ambiguous and were resolved by asking rather
+than guessing: "hero gsap animation" (the hero contained no GSAP — GSAP only drives the How-it-works
+scrub) resolved to the particle vortex, and "the check availability button" resolved to the header
+one specifically, leaving the hero form, plan cards, Wi-Fi section and final CTA intact.
+
+**Verification**
+`tsc --noEmit` clean. Fresh server render returns 200 with zero occurrences of the four removed
+strings, exactly five `faq-button-*` ids, exactly five `Question` entries in the FAQPage schema,
+and zero `<canvas>` elements on the page.
+
+**Compliance note**
+Removing the hero disclosure pill means the above-the-fold disclosure now rests solely on the
+header wordmark subtitle ("Authorized Rise Internet reseller"), which is smaller and easier to
+miss. The full disclosure remains in the footer, on `/disclaimer` and on `/trademarks`, and the
+first FAQ still answers "Is this the official Rise Internet website?". Removing the plan-grid
+pricing disclaimer means the $99 connection fee, $6.99 carrier recovery cost and equipment rental
+are no longer disclosed adjacent to the advertised prices — they remain only on `/disclaimer`.
+Both weaken the Google Ads affiliate-disclosure and price-accuracy posture; flagged to the user.
+
+---
+
+## 2026-08-07 — Rebrand to Rise Internet, custom wordmark, footer and section trim
+
+**What changed**
+
+- **Renamed the site operator to "Rise Internet."** `resellerName` and `resellerLegalName` in
+  `lib/site.ts` both now read "Rise Internet", so `resellerName === carrierName`. Because of that
+  collision, every sentence that draws a reseller-vs-carrier distinction was rewritten to use
+  "this website" / "we" instead of the name tokens — otherwise the copy collapses into "Rise
+  Internet is an independent authorized reseller of Rise Internet". Rewrote `RESELLER_DISCLOSURE`,
+  the opening paragraph of `/disclaimer`, and the controller sentence in `/privacy-policy`.
+- **Added `components/brand/RiseLogo.tsx`** — the wordmark from the supplied reference: bold "R",
+  an angled orange bolt (inline SVG path) standing in for the "I", "SE", a superscript service
+  mark, and a wide-tracked "INTERNET" beneath. Built from live text rather than a raster so it
+  stays crisp at any size, inherits the already-loaded Barlow face, and adds no network request.
+  The whole mark scales from a single `font-size`; internal dimensions are all in `em`.
+  `tone="auto"` makes the letters inherit `color`, which lets the header cross-fade the mark from
+  white to ink as the bar goes solid. Tracking on "INTERNET" was tuned empirically against the
+  rendered box until it sits flush under "RISE" (measured ratio 0.999 at both header and footer
+  sizes).
+- **Added `lib/nav.ts`** as the single source for the primary nav, consumed by the header, the
+  mobile drawer and the footer's Explore column, so the three cannot drift apart.
+- Removed the 30-day guarantee strip from the hero, plus `.guaranteeWrap` / `.guarantee` /
+  `.shield` styles and the now-unused `GUARANTEE_COPY` and `Parallax` imports.
+- Removed the "Why Rise Internet" section from the page and dropped "Why Rise" from the nav.
+  `WhyRise.tsx` and its stylesheet remain in the tree but are unreferenced.
+- Footer: replaced the text wordmark with `RiseLogo`; Explore column now mirrors the navbar;
+  removed the "Rise Internet" carrier-policy column (and deleted `carrierLegalLinks` from
+  `lib/legalNav.ts`), the "Service area" state list, and the "Official Rise Internet site" line.
+  Grid went from four columns to three.
+
+**Files touched**
+`src/lib/site.ts`, `src/lib/nav.ts` (new), `src/lib/legalNav.ts`,
+`src/components/brand/RiseLogo.tsx` (new), `RiseLogo.module.css` (new),
+`src/components/layout/SiteHeader.tsx`, `SiteHeader.module.css`,
+`src/components/layout/SiteFooter.tsx`, `SiteFooter.module.css`,
+`src/components/sections/Hero.tsx`, `Hero.module.css`,
+`src/app/page.tsx`, `src/app/disclaimer/page.tsx`, `src/app/privacy-policy/page.tsx`
+
+**Verification**
+`tsc --noEmit` clean. Zero occurrences of "Peak Connect" anywhere in `src/`. Zero
+self-contradictory "Rise Internet is an independent reseller of Rise Internet" strings across the
+four legal pages that reference the operator. Header nav and footer Explore both resolve to
+exactly `Plans / Advanced Wi-Fi / How it works / FAQ`. Guarantee copy, `#why-rise`, the state
+list, the carrier-links column and the "Official Rise Internet site" line all return zero hits.
+All eight legal routes still return 200.
+
+**Compliance note — this is now the material risk on the project**
+With the operator renamed to the carrier's own brand, and with the "official Rise Internet site"
+link, the carrier policy links and the hero disclosure all removed in this and the previous
+session, nothing above the fold distinguishes this site from the official one. The disclosure now
+survives only in the footer block, on `/disclaimer`, on `/trademarks`, and in the first FAQ
+answer. This is a trademark-use and Google Ads misrepresentation exposure, and it directly
+reverses the Step 3 requirement that the independent-reseller status be visible near the hero.
+Raised with the user; the naming and removals were their explicit instruction.
+
+---
+
+## 2026-08-07 — Hero background image and reseller lockup
+
+**What changed**
+
+- **Hero background image.** Copied the supplied fibre-optic render to
+  `src/assets/hero-fiber.jpg` (2752×1536) and set it as the hero plate via `next/image` with a
+  static import — `fill`, `priority`, `sizes="100vw"`, `quality={82}`, `placeholder="blur"`. The
+  static import supplies intrinsic dimensions so the box is reserved and the image contributes no
+  CLS; `priority` makes it the LCP fetch rather than a lazy one. Next serves AVIF/WebP and
+  resolution-matched widths (1920 at desktop, 1280 at laptop).
+  `object-position: 68% 50%` biases the frame right, because the fibre convergence sits
+  right-of-centre in the source while the copy occupies the left.
+- **Contrast scrim reworked.** The old radial ember veil became a left-weighted linear scrim over
+  `rgb(9 12 20)`, so type stays legible over the copy column while the fibre detail survives on the
+  right. Tuned against measured values rather than by eye: composited the scrim over real image
+  pixels on a canvas and sampled a grid under each text block. First pass gave a 4.23:1 worst case
+  on the headline; raising the mid stops (0.62→0.72 at 52%, 0.34→0.48 at 76%) brought it to
+  **5.47:1** on a 110px headline (AA-large needs 3) with the lede at **12.75:1**.
+  Phones get a flat vertical scrim instead, since copy spans the full width there — measured
+  **12.98:1** headline / **12.17:1** lede at 375px.
+- **"Authorized Reseller" lockup** added beside the wordmark in both the header and the footer,
+  set on two lines behind a vertical rule so it reads as a qualifier on the brand rather than part
+  of the mark. Header inherits `currentColor` so it flips with the scrolled state.
+  The initial mobile override shrank it to 8px; measurement showed 151px of slack in the bar at
+  375px, so the override now only tightens spacing and holds the type at 10px — it is a
+  disclosure, and 8px is too small to function as one.
+
+**Files touched**
+`src/assets/hero-fiber.jpg` (new), `src/components/sections/Hero.tsx`, `Hero.module.css`,
+`src/components/layout/SiteHeader.tsx`, `SiteHeader.module.css`,
+`src/components/layout/SiteFooter.tsx`, `SiteFooter.module.css`
+
+**Verification**
+`tsc --noEmit` clean; three consecutive fresh requests return 200. `_next/image` returns 200 for
+all served widths. Checked at 375 / 768 / 1440: zero horizontal overflow at every width, image
+loads at each, burger stays ≥40px and on-screen at 375. Contrast figures above computed from
+composited pixels, not estimated.
+
+**Compliance note**
+This partially restores what the previous two sessions removed. "Authorized Reseller" now appears
+adjacent to the logo in the header, which puts a reseller signal above the fold on every page for
+the first time since the hero pill was dropped. Still absent versus the original Step 3 build: the
+fee disclaimer beside the advertised prices, and any link to the official riseinternet.com site.
+
+---
+
+## 2026-08-07 — Hero atmosphere (GSAP + Framer Motion) and a reduced-motion visibility fix
+
+**What changed**
+
+- **`components/hero/HeroAtmosphere.tsx` (new)** — the animated layer over the background plate:
+  - *Gradient glows* (Framer Motion): three drifting radial orbs on 22s/27s/14s loops. Ember and
+    cyan use `mix-blend-mode: screen` so they read as light in the scene; a third deep-blue orb sits
+    behind the headline on `normal` blend, adding depth without lifting luminance under the type.
+  - *Network constellation* (GSAP): 14 nodes / 18 edges, hand-authored in a 600×600 viewBox and
+    weighted right so it never reaches the copy column, with a gradient mask fading its left edge.
+    Edges draw in via per-line `getTotalLength()` dash offsets; nodes breathe on offset sine loops;
+    7 data pulses run the edges. Segments are straight, so a linear cx/cy tween traces them exactly
+    and MotionPathPlugin is not needed. Timings come from a deterministic `sin`-based jitter so the
+    field varies without `Math.random()` (which would break SSR and GSAP resume).
+  - *Sheen*: a slow skewed light sweep across the plate.
+- **Hero scroll parallax (GSAP ScrollTrigger)** — plate drifts at 18% (8% on phones) with a 1.06
+  scale, atmosphere at 26%, copy lifts −12% and fades, all on one scrubbed timeline. `.plate` is
+  bled `-12%` vertically so the travel never exposes an edge.
+- **Hero entrance (Framer Motion)** — lede and address form fade up on a stagger. The **h1 is
+  deliberately transform-only with no opacity fade**: it is the LCP element, and an element at
+  `opacity: 0` is not counted as painted, so fading it in would push LCP out by the transition
+  duration.
+- Layer order is `plate(-4) → atmos(-3) → veil(-2)`. The atmosphere sits **beneath** the contrast
+  scrim by design, so none of it disturbs the previously measured headline contrast.
+
+**Two bugs found by verification and fixed**
+
+1. *Pulse circles rendered without `cx`/`cy`*, so SVG threw
+   `attribute cx: Unexpected end of attribute` on every frame until GSAP's first tick. Now seeded
+   in JSX at their edge's start node.
+2. *Reduced-motion content was invisible.* `StaggerGrid`/`StaggerItem`/`Reveal`/`ClipWipe`/
+   `RevealText` branched on `useReducedMotion()`, which returns null during SSR and a boolean after
+   hydration. The server emitted Framer's `opacity: 0` initial style while the client rendered an
+   unstyled element; React does not patch up mismatched attributes, so `opacity: 0` persisted —
+   **all three plan cards and every mesh feature tile were permanently invisible for
+   reduced-motion users**, the exact audience the fallback exists for. All five components now
+   render identical markup regardless, and reduced motion is enforced solely by the
+   `[data-reveal], [data-motion]` rule in globals.css. Measured invisible elements: **11 → 1**, and
+   the remaining one is the intentional `.sr-only` heading.
+
+**Files touched**
+`src/components/hero/HeroAtmosphere.tsx` (new), `HeroAtmosphere.module.css` (new),
+`src/components/sections/Hero.tsx`, `Hero.module.css`,
+`src/components/motion/StaggerGrid.tsx`, `Reveal.tsx`, `ClipWipe.tsx`, `RevealText.tsx`,
+`src/app/globals.css`
+
+**Verification**
+The in-app Browser pane could not be used — it is not displayed, so its tab is `document.hidden`
+with **0 rAF ticks**, which suspends GSAP and Framer Motion entirely and makes animation
+unobservable there. Verified instead by driving the cached Playwright chromium headlessly
+(`scratchpad/verify-hero.mjs`, `verify-reduced.mjs`) at 1440/1024/375 plus a reduced-motion pass:
+31 rAF ticks per 500ms in all runs; 18/18 edges drawn, glows/nodes/pulses all confirmed changing
+between samples, parallax matrix confirmed on scroll (93.7px desktop, 41.7px mobile); mobile
+correctly omits the constellation; reduced-motion pass has every animation off. Zero hydration
+errors and zero SVG attribute errors across all four runs. `tsc --noEmit` clean.
+
+**Known gap**
+`/favicon.ico`, `/icon.png` and `/apple-icon.png` all 404 — the one remaining console error.
+Not addressed; out of scope for this change.
+
+---
+
+## 2026-08-07 — 3D pointer-driven hero plate
+
+**What changed**
+
+Replaced the static `<Image>` background with `components/hero/HeroPlate.tsx`:
+
+- **Real 3D depth, not faked parallax.** Two copies of the art sit on a `preserve-3d` deck at
+  different Z depths (front at 0, back at `translateZ(-220px)`). Because the *deck* rotates under
+  the pointer, the perspective divide separates the planes genuinely. The back plane is scaled 1.2
+  to compensate for the divide (1200 / (1200 + 220) ≈ 0.845) and carries `blur(11px)
+  brightness(0.62)` as a stand-in for depth of field.
+- **Pointer response via GSAP `quickTo`** — rotationX/Y (±5°/±7°), deck translate, an extra
+  differential on the front plane, and a cursor spotlight. `quickTo` interpolates on GSAP's ticker,
+  so pointer movement never triggers a React render.
+- **Travelling glints** using MotionPathPlugin (free in GSAP 3.15) along three hand-traced
+  centre-lines of the fibre bundle, so light appears to run along the strands. Paths are stored
+  normalised and converted to pixels at runtime — MotionPath resolves paths in the target's pixel
+  space, so a fixed string would only align at one viewport size. Rebuilt on resize via
+  ResizeObserver.
+- **Ambient motion** so the plate is never still: a 14s scale breath on the deck and a 19s
+  counter-drift on the back plane.
+- **Touch devices** have no pointer, so the same rig is driven by a 26s autonomous orbit rather
+  than left inert.
+
+**Bug found and fixed during verification**
+Desktop was completely inert — the deck rendered a plain 2D `matrix()` (ambient scale only) and the
+spotlight never lit, while the touch branch worked. Cause: cleanup was registered with
+`self.add(fn)` inside `gsap.context`. `add()` is not a cleanup hook — it **invokes fn immediately**,
+so the pointer listeners and the ResizeObserver were torn down the instant they were registered.
+Teardown is now returned from the context callback.
+
+**Files touched**
+`src/components/hero/HeroPlate.tsx` (new), `HeroPlate.module.css` (new),
+`src/components/sections/Hero.tsx`, `Hero.module.css`
+
+**Verification** (headless chromium, `scratchpad/verify-plate.mjs`, `verify-cost.mjs`,
+`verify-contrast.mjs`)
+- Desktop: deck resolves to `matrix3d(...)` and changes with pointer position; spotlight 0 → 1;
+  6 glints moving with varying opacity. Mobile: `matrix3d` orbit, spotlight 0.55, 3 glints.
+  Reduced motion: `transform: none`, 0 glints, spotlight hidden, back plane removed.
+- Cost: **70.7KB** total AVIF for all layers (front 55.3KB q82 + back 16.2KB q45 + 0.9KB blur).
+  **LCP 1980ms** (budget 2500), **CLS 0.025** (budget 0.1).
+- Contrast re-measured against genuinely rendered pixels, with the copy hidden so glyph
+  antialiasing could not skew the sample, and the cursor parked over the copy for the worst case:
+  headline **6.04:1**, lede **9.31:1** desktop; **16.78:1 / 13.44:1** mobile. Better than the
+  5.47:1 before this change — the darkened, blurred back plane suppresses the bright spots.
+  (An initial measurement that sampled inside the text boxes reported 3.19/2.26; that was
+  antialiasing contamination, not a real regression.)
+- Zero console errors in all three runs.
+
+---
+
+## 2026-08-07 — Restore full artwork brightness; move legibility off the image
+
+**What changed**
+
+The hero was reading dull because legibility had been bought by dimming the art. Reversed that
+approach: the plate now renders near the brightness of the source file, and contrast is earned by
+where the type sits rather than by how dark the picture is.
+
+- **Removed the heavy scrim.** The left-to-right wash was 0.94 → 0.34 alpha across the whole hero.
+  It is now 0.6 → transparent by 54%, so the entire fibre bundle is untouched.
+- **Removed `brightness(0.62)` from the back plane** (blur alone carries the depth-of-field read,
+  saturation lifted to 1.3) and added a slight lift to the front plane
+  (`saturate(1.08) contrast(1.04) brightness(1.05)`).
+- **Recoloured `.glowDeep`** in HeroAtmosphere from a dark navy orb — which read as a grey smudge
+  over the art — to a cool bloom that adds light instead of subtracting it.
+- **Sized the copy to the artwork.** A column profile of the rendered plate showed white-on-image
+  contrast holding at 12.6–17:1 out to 42% of the viewport, then collapsing to ~1.1 where the
+  fibres begin. The headline was running to 69% (contrast 1.24:1). It is now capped at 12ch with a
+  4.5rem ceiling and ends at 572px, inside the measured safe zone; the lede is capped at 38ch.
+- **Added a lower-left pool** to the veil. The dark part of the artwork is the upper-left quadrant
+  only — cyan strands sweep back across the lower left, straight through the lede and the note
+  under the form (worst pixel `rgb(133,205,212)` at x562/y676). A radial anchored at 15%/80% seats
+  that block without reaching the bundle.
+- **Added a header gradient shim.** Nav links measured **1.2:1** over the now-bright plate. The
+  shim is header chrome, not a wash over the image: top 150px only, feathered, and it fades to
+  zero once the bar turns solid on scroll.
+- Glints masked off the copy column, layered text-shadows on headline/lede/note, and the lede
+  moved from 72% white to solid white.
+
+**Files touched**
+`src/components/sections/Hero.module.css`, `src/components/hero/HeroPlate.module.css`,
+`src/components/hero/HeroAtmosphere.module.css`, `src/components/layout/SiteHeader.module.css`
+
+**Verification** (headless chromium; plate photographed with the copy hidden so glyph antialiasing
+cannot skew the sample)
+- Brightness, fibre side: mean luma **50.9 → 92.1**, bright-pixel share **8.25% → 24.5%**, peak 255.
+- Contrast, worst case with the cursor parked over the copy: headline **12.94:1**, lede **7.27:1**,
+  note **12.16:1**; mobile **13.3:1 / 5.43:1**. Nav links **1.2 → 6.7+**. All clear WCAG AA.
+- LCP **1208ms**, CLS **0**, image weight unchanged at 70.7KB.
+- Pointer tilt, spotlight and glints still confirmed animating at desktop and mobile; reduced
+  motion still fully inert. Zero console errors in all three runs.
+
+**Note on method**
+An intermediate measurement that sampled inside the text boxes reported the headline at 3.19:1 and
+looked like a regression; that was antialiasing contamination from the glyphs themselves. The
+column-profile and hidden-copy techniques above are the reliable ones, and they are what found the
+real problems — the 1.24:1 headline overlap and the 1.2:1 nav.
+
+---
+
+## 2026-08-07 — Hero reduced to the bare artwork
+
+**What changed**
+
+Stripped the hero back to the image alone, per instruction: no animations, no glass/blur, no zoom,
+nothing layered over the picture.
+
+- **`Hero.tsx` rewritten as a static server component.** Removed `HeroPlate` (3D deck, pointer
+  tilt, spotlight, glints, blurred back plane), `HeroAtmosphere` (glows, constellation, sheen), the
+  GSAP ScrollTrigger parallax timeline, and the Framer Motion entrance animations. It now holds one
+  `next/image` and the copy. No hooks, so only AddressCheck ships JS from this section.
+- **Removed every overlay**: the `.veil` contrast scrim (both the left wash and the lower-left
+  pool), the `.atmos` layer, the bottom `.fade`, and the header's gradient shim.
+- **No crop or zoom.** `.plate` is `inset: 0` with no bleed or transform, and the section is pinned
+  to the artwork's own `aspect-ratio: 2752 / 1536`, so the image renders at its native framing.
+  Below 900px the ratio is dropped (it would leave the section far too short for the copy) and the
+  image covers the content height instead.
+- Legibility now rests entirely on `text-shadow` applied to the type itself — headline, lede, note,
+  nav links, phone, reseller tag — plus a `drop-shadow` filter on the logo so the SVG bolt gets it
+  too. All of these clear when the header turns solid on scroll.
+
+**Files touched**
+`src/components/sections/Hero.tsx`, `Hero.module.css`,
+`src/components/layout/SiteHeader.module.css`
+
+`HeroPlate.tsx/.module.css` and `HeroAtmosphere.tsx/.module.css` are now unreferenced. Left on disk
+rather than deleted; they are no longer imported, so they are not bundled.
+
+**Verification**
+`tsc --noEmit` clean. Image renders whole and at full brightness (peak luma 255, bright-pixel share
+21.6% desktop / 25.0% mobile). Nav links measure 5.05–12.07:1 on text-shadow alone.
+
+**Known defect — reported to the user, not silently accepted**
+With the artwork shown whole and nothing layered over it, the bright fibre bundle now sweeps
+through the middle-left where the body copy sits. Measured against the rendered background:
+headline **1.54:1**, lede **1.20:1** desktop; **1.2 / 1.1** mobile. WCAG AA needs 3:1 for large
+text and 4.5:1 for body. The lede's lower half is genuinely hard to read, which the screenshot
+confirms. The reseller tag (3.84:1) and header phone number (3.83:1) also sit under 4.5.
+Text-shadow raises perceived legibility but does not count toward the WCAG ratio and cannot rescue
+white type over a near-white background. This is an unavoidable consequence of "show the whole
+image" plus "no layer over it" — the artwork has no dark region large enough to hold the full copy
+block. Options put to the user rather than chosen unilaterally.
+
+**Decision (user, 2026-08-07): leave as is.**
+The contrast shortfall above is accepted deliberately. The artwork stays full-frame, at native
+ratio, at full brightness, with nothing layered over it — that is the priority for this hero, and
+the lede's readability is knowingly traded for it.
+
+DO NOT "fix" this by reintroducing a scrim, gradient, blur or overlay on the hero image. Four
+options were put to the user (move copy below the image, crop back to the dark area, small scrim
+behind the lede only, leave as is) and "leave as is" was chosen explicitly. Treat any overlay on
+this hero as a regression unless the user asks for one.
+
+Remaining known gaps, unchanged: headline 1.54:1 / lede 1.20:1 desktop, 1.2 / 1.1 mobile; reseller
+tag 3.84:1; header phone 3.83:1. Also still open from earlier sessions: no favicon (/favicon.ico,
+/icon.png, /apple-icon.png all 404), and no fee disclaimer adjacent to the advertised prices.
+
+---
+
+## 2026-08-07 — Hero typography fixes
+
+**What changed** (`src/components/sections/Hero.module.css` only; markup and background untouched)
+
+- **`.heading` max-width 12ch → 56rem** (the max-w-4xl equivalent). The 12ch cap was the cause of
+  the one-word-per-line stacking: the longer of the two spans, "built for rural addresses", needs
+  ~709px at the 72px ceiling and 12ch allowed barely 400.
+- **`.heading` line-height `var(--lead-crush)` (0.86) → 1.08.** At display size the crushed value
+  was colliding ascenders with the descenders on the line above once the headline ran past two
+  lines.
+- **Line breaks** already come from the two block-level spans in `Hero.tsx`, so no `<br>` was
+  needed — they only lacked the width to sit on one line each. `text-wrap: balance` retained for
+  narrow viewports where a span genuinely does wrap. "RURAL" keeps `.accent` / `--ember-core`.
+- **`.lede` max-width 38ch → 34rem**, matching `.action` exactly so the lede, the address form and
+  the note beneath it read as one aligned column instead of three ragged widths.
+- **`.lede` text-shadow strengthened** (three layers, 0.7/0.6/0.45 alpha). Kept as text-shadow
+  rather than the literal `drop-shadow-md` equivalent — that is a UI-card shadow (0 4px 3px at 7%
+  alpha) and is invisible over artwork this bright.
+
+Note: this project has no Tailwind; the named utilities were translated to their computed values in
+the existing CSS Module token system.
+
+**Verification**
+Headline resolves to exactly 2 lines — one per span — at 1440, 1280, 1024 and 768; 4 lines at 375,
+which is unavoidable at that width. Zero horizontal overflow at every breakpoint. Line-height ratio
+confirmed 1.08. `tsc --noEmit` clean.
+
+**Contrast side-effect, consistent with the accepted trade-off above**
+Widening the headline pushes its right edge from 572px to 886px, further into the fibre bundle.
+Headline worst case measured 1.54 → **6.24:1** desktop (it gained, because the wider two-line
+setting sits higher in the frame over darker art) but **1.14:1** on mobile. Lede **1.1:1**, note
+**1.13:1**. These remain inside the "leave as is" decision recorded above — no overlay was added.
+
+---
+
+## 2026-08-07 — Hero scrim reinstated, headline gradient added
+
+**SUPERSEDES the "leave as is / DO NOT reintroduce a scrim" decision recorded above.** The user
+explicitly requested a protective overlay this time. That earlier instruction is void; the current
+state is the intended one.
+
+**What changed** (`Hero.tsx`, `Hero.module.css`)
+
+- **Protective scrim** (`.scrim`): absolutely positioned, `z-index: 0` — above the plate (-1) and
+  below the copy, which was given `z-index: 1`. Horizontal gradient over `rgb(10 15 26)` running
+  0.92 at the left to fully transparent by 82%, so the fibre bundle on the right keeps the
+  brightness restored earlier. Below 900px it flips to a vertical gradient, since the copy spans
+  the full width there and a left-weighted wash would do nothing.
+- **Headline gradient**: `linear-gradient(to bottom right, #fff 0%, #fff 68%, #ffdcc4 86%,
+  var(--ember-core) 100%)` with `background-clip: text` and a transparent fill. Every stop is fully
+  opaque — a translucent stop would let the artwork read through the glyphs. The white run is held
+  to 68% so only the tail of "ADDRESSES" warms, which keeps "RURAL" readable as the accent rather
+  than competing with a second orange.
+- **`.accent` ("RURAL")** sets `-webkit-text-fill-color` explicitly. Without it the child inherits
+  the parent's transparent fill and gets painted by the headline gradient like everything else.
+- **Headline shadow uses `filter: drop-shadow()`, not `text-shadow`.** With `background-clip: text`
+  the glyph fill is transparent, so a text-shadow paints *behind* the letterforms and is then
+  visible straight through them — it reads as a grey smear. `filter` operates on the composited
+  result and shadows the clipped gradient correctly. This is the conflict the user anticipated; the
+  suggested inline `textShadow` would have hit exactly that bug.
+- **Lede** moved to stark white with a three-layer shadow; **actionNote** likewise. Both sized like
+  `drop-shadow-lg` but with real alpha — Tailwind's default (0 4px 3px at 7%) is a card shadow and
+  does nothing behind thin type over artwork.
+
+**Corrections to the request's premises**
+There was no gradient text in the hero to preserve — the headline was solid white with a flat
+orange accent; the gradient is new here. The fibre animations were removed in the previous session
+at the user's own instruction, so there were none to keep either.
+
+Also note this project has no Tailwind; the named utilities were translated to computed values in
+the existing CSS Module token system.
+
+**Verification** (headless chromium, background photographed with the copy hidden)
+Headline **10.75:1** desktop / **10.16:1** mobile; lede **6.0–7.02:1** / **8.75:1**; note
+**10.11:1**. All clear WCAG AA. Confirmed `background-clip: text` resolved, fill transparent,
+accent still `rgb(255,86,1)`, z-order plate -1 / scrim 0 / inner 1. Headline still breaks to
+exactly two lines at 1440/1280/1024/768. `tsc --noEmit` clean.
+
+---
+
+## 2026-08-07 — Hero: tightened top gap, vivid orange headline, stronger scrim
+
+**What changed** (`Hero.module.css` only)
+
+- **Top gap 134px → 36px.** The section was `align-items: center`, so the copy sat mid-way down an
+  ~800px hero and padding alone could not close the gap — centring re-split whatever space was
+  freed. Switched to `align-items: flex-start` and set top padding to
+  `clamp(6rem, 5vw + 3.5rem, 7rem)`, which clears the fixed header and nothing more. Mobile gap is
+  24px.
+- **Headline gradient** is now `to right, #fdba74 (orange-300) → #ea580c (orange-600) → #fdba74`,
+  fully opaque at every stop, on a `220%` track.
+- **Sweep animation added** — `headlineSweep`, 4s linear infinite, animating `background-position`.
+  There was no such animation before this change; nothing was "sped up". Disabled under
+  `prefers-reduced-motion`.
+- **Shadow** raised to `drop-shadow(0 4px 30px rgb(0 0 0 / 1)) drop-shadow(0 0 60px rgb(0 0 0 /
+  0.8))` — the requested values, expressed as `filter` rather than `text-shadow` for the
+  `background-clip: text` reason documented in the previous entry.
+- **"RURAL" flipped from orange to white.** With the whole headline running orange-300 →
+  orange-600, an orange accent was invisible inside it. The emphasis is inverted so the word still
+  does its job.
+- **Scrim** deepened to `#020617`, holding 0.9 to 40% and 0.78 to 62% before clearing by 100%;
+  mobile variant raised to 0.84–0.9.
+
+**Why the scrim went further than the literal spec**
+`orange-600` is a dark colour (relative luminance 0.245), so it needs a genuinely dark backdrop.
+Measured at actual glyph positions, the first attempt left the end of "ADDRESSES" at **1.31:1**
+where a lit fibre showed through. The literal `from-100 via-80/50% to-transparent` ramp improved
+that to 2.36:1 — still under the 3:1 floor for large text. Holding 0.78 out to 62% (just past where
+the headline ends) reached **3.6:1**, and lifting the mobile variant took mobile from 2.93 to
+**4.38:1**.
+
+Note the block-box trap: an initial probe measured the h1's *layout box*, which extends past the
+text into bright artwork, and reported a misleading 1.01:1. `glyph-contrast.mjs` uses
+`Range.getClientRects()` so it samples only where glyphs actually sit.
+
+**Verification**
+Headline worst stop (orange-600) **3.6:1** desktop / **4.38:1** mobile; orange-300 **7.6 / 9.24**;
+"RURAL" **12.82 / 15.57**; lede **19.69 / 13.7**. All clear WCAG AA for their text sizes. Sweep
+confirmed running at 4s and confirmed off under reduced motion. Headline still breaks to exactly
+two lines at 1440/1280/1024/768. `tsc --noEmit` clean.
+
+**Standing caveat**
+`orange-600` at 3.6:1 passes AA for large text only. It must not be used at body size, and if the
+scrim is ever lightened again this stop is the first thing that breaks. Swapping the mid stop to
+orange-500 or orange-400 would buy headroom if that becomes a problem.
+
+---
+
+## 2026-08-07 — Plan card text contrast
+
+**What changed**
+
+An audit of every text run in `#plans` (71 runs, measured against real rendered pixels) found 8
+failing WCAG AA. Two token colours were responsible:
+
+- **`--ink-faint` (#b3b3b3) = 2.1:1 on white.** Used for "UP TO", the struck-through list prices
+  ($49.99 / $69.99), the struck "$15" Wi-Fi price and the "Every plan includes" label — all at
+  12–20px, where the floor is 4.5:1. Switched those to `--ink-mute` (5.28:1). Note the struck
+  prices are still information a buyer needs, so making them near-invisible was the wrong call
+  regardless of their decorative strikethrough.
+- **`--ember-text` (#e85c0d) = 3.52:1 on white.** Fine at display size but short at 14px, where it
+  was used for "$7.50/mo" and the section eyebrows. Moved those to `--ember-press` (#cc4800), the
+  darkest ramp step that still reads unambiguously orange. Changed on the global `.eyebrow` too;
+  sections on dark backgrounds already override it locally.
+
+A second pass then caught 6 more on the **featured Pro card**, which the first audit had skipped
+because its background is a gradient rather than a flat colour:
+
+- **`--wash-featured` started at #ff7a2e**, only ~2.6:1 against the white text the card carries.
+  Deepened to `#c94600 → #932f00` (4.8:1 and 7.9:1).
+- The card's translucent whites (0.6–0.86 alpha) were raised to 0.86–0.94.
+
+**Files touched**
+`src/components/sections/PlanGrid.module.css`, `src/app/globals.css`
+
+**Verification**
+All 71 text runs in the plan cards pass. A whole-page sweep (230 runs) reports no regressions from
+the two global token changes — its remaining flags are artefacts of the method (gradient-clipped
+hero headline reports `rgba(0,0,0,0)`, `.sr-only` labels, and the badge's range rect).
+
+**Separate finding, reported not fixed — out of the requested scope**
+White text on the primary CTA gradient (`--wash-cta`) measures **2.64:1** against its lightest stop
+`rgb(255,120,31)`. Affects three buttons: the hero address submit, the Advanced Wi-Fi CTA and the
+final CTA submit. This is a genuine AA failure on the main conversion control, but it predates this
+task and sits outside the plan cards, and darkening it changes every primary button on the site —
+so it was raised with the user rather than changed unilaterally.
+
+---
+
+## 2026-08-07 — Advanced Wi-Fi section: layout, typography, and a ClipWipe deadlock
+
+**Root cause of the "empty space on the right"**
+The right column was not empty by design — it held the eero 7 spec card, which was **invisible and
+always had been**. `ClipWipe` put `whileInView` and its own closed clip-path on the same element.
+`inset(0% 0% 0% 100%)` collapses the visible box to zero width, so IntersectionObserver reported
+`isIntersecting: false` at every scroll position, so the animation that would have opened it never
+fired. Measured `intersectionRatio: 0` even with the card scrolled to viewport centre.
+
+`ClipWipe` now splits the two: an unclipped outer wrapper owns the viewport trigger and propagates
+a variant to the clipped child. Verified opening to `inset(0%)` on scroll. This affected only this
+one instance — it is the only ClipWipe on the site — but the component was broken for any caller.
+
+**Layout and typography** (`MeshSection.module.css`)
+- `.top` was `grid-template-columns: 1.05fr 0.95fr` with `.intro` capped at `46ch`, which resolved
+  to **416px**. A 68px headline in a 416px column is what produced the four near-one-word lines.
+  `.top` is now a single full-width flex column; the spec card sits beneath the intro rather than
+  beside it.
+- `.heading`: `max-width: 56rem`, `line-height: 1.06`, `letter-spacing: var(--track-crush)`.
+  Resolves to **2 lines at every breakpoint** (1440 / 1280 / 1024 / 768 / 375), down from 4.
+- `.lede`: `clamp(1.125rem, 0.6vw + 1rem, 1.375rem)` (22px desktop → 18.25px mobile),
+  `line-height: var(--lead-relaxed)`, `max-width: 48rem`, and colour `#a1a1aa` — a cool neutral
+  grey against the pure-white headline rather than dimmed white. 6.7:1 on this background.
+- `.specList` became a 3-column grid (2 at ≤720px, 1 at ≤480px) with each spec as a label-over-
+  value pair on an ember rule, since it is now full width rather than a narrow sidebar list.
+- `.specBadge` ("eero 7"): white on `#ff5601` measured **3.19:1** at 12px. Switched the text to
+  `--ink-strong` on the same orange for **5.58:1**, so the badge keeps its brightness.
+
+**Verification**
+40 text runs in the section audited against rendered pixels: 1 remaining failure, and it is the
+already-reported CTA gradient issue below. Headline 2 lines and zero horizontal overflow at all
+five breakpoints. Spec card confirmed `inset(0%)` (open). `tsc --noEmit` clean.
+
+**Still outstanding, unchanged**
+White on the primary CTA gradient measures 3.06:1 here (2.64:1 against its lightest stop).
+Reported previously; not changed, because darkening `--wash-cta` affects every primary button.
+
+---
+
+## 2026-08-07 — Real photography wired into six sections
+
+**What changed**
+
+Nine delivered images implemented, plus OG card and favicons.
+
+| Image | Placement |
+|---|---|
+| `hero-family.jpeg` | Hero background — replaced `hero-fiber.jpg` |
+| `coverage-family.jpeg` | TrustBand background (new `.plate` + light scrim) |
+| `wifi-household.jpeg` | Advanced Wi-Fi background (new `.plate` + `.plateScrim`) |
+| `step-1..4-*.jpeg` | Four How-it-works cards — new 4:3 `.shot` bleeding to the card edge, subtle hover zoom; step numeral reduced since the photo now leads |
+| `support-agent.jpeg` | FAQ sticky panel — new `<figure>` with a gradient caption strip |
+| `cta-household.jpeg` | Final CTA — under the brand orange at 0.58 opacity, `mix-blend-mode: multiply` |
+| `opengraph-image.jpeg` | Moved to `src/app/` — Next file convention |
+| `icon.jpeg` + `apple-icon.jpeg` | Moved/copied to `src/app/` |
+
+All wired as `next/image` static imports with `placeholder="blur"`, per-slot `sizes`, and
+per-slot `quality` (74–90). Only the hero keeps `priority`.
+
+`isolation: isolate` added to `.section` in MeshSection so the new negative-z children stack
+above the section background rather than behind it.
+
+**Contrast fixes this forced**
+- Final CTA lede measured **4.02:1** (white at 0.88 alpha over brand orange — it was already
+  failing before the image at ~3.16:1). Solid white plus raising the plate to 0.58 took it to
+  **4.99:1**; the headline is **5.57:1**.
+- FAQ caption measured **2.94:1** over the lit part of the portrait. Its gradient now ramps from
+  40% instead of fading linearly — **9.35:1**.
+
+**Verification**
+All 9 images load, zero HTTP failures, zero console errors, zero horizontal overflow.
+**LCP 1304ms, CLS 0.** OG and icon metadata confirmed emitted in `<head>`. `tsc --noEmit` clean.
+
+**Measurement note for future sessions**
+Two probe techniques give false failures here and cost time twice: (1) resolving background via
+`getComputedStyle().backgroundColor` returns transparent for gradients and walks up to a white
+ancestor — the CTA "1.00:1" readings are bogus; (2) sampling an element's *layout box* includes
+padding where an overlay gradient is still transparent. Use `Range.getClientRects()` on the text
+node and sample the rendered screenshot. `scratchpad/pixel2.mjs` does this correctly.
+
+**Deliberately not implemented**
+Plan-card thumbnails. Those cards already carry speed, two prices, a discount note, three spec
+rows, a blurb and a CTA; photos push the buttons below the laptop fold on the page's highest-value
+block. Prompts remain in `docs/image-plan.md` if that call is revisited.
+
+---
+
+## 2026-08-07 — Advanced Wi-Fi: contrast, frost panel, defined feature cards
+
+**Root problem in the reference screenshot:** the `wifi-household` background was showing straight
+through the feature cards. Their fill was `rgb(255 255 255 / 0.03)` — a 3% white tint over a
+photograph — so card edges dissolved and the body copy sat on lit interior.
+
+**What changed** (`MeshSection.module.css`, plus one element in the tsx)
+
+- **Feature cards are now opaque** `#101012` with an orange inner-glow border
+  (`inset 0 0 0 1px rgb(255 138 62 / 0.06)` + `border: 1px solid rgb(255 138 62 / 0.22)`), lifting
+  to a `0 0 24px rgb(255 86 1 / 0.14)` bloom on hover. Titles moved to `--ember-lift` orange, body
+  copy to solid `#ced1d8` instead of 48%-alpha white — the alpha version let the photo bleed
+  through the glyphs. Icon tiles gained a border and inner ember glow. Seven cards, 4-up grid.
+- **Spec card rebuilt as real frost:** `backdrop-filter: blur(26px) saturate(1.5)` over a
+  **dark-tinted** base (`rgb(24 24 28 / 0.72) → rgb(12 12 15 / 0.82)`). A white translucent fill
+  was the obvious choice and the wrong one — over a lit interior it pushed the right-hand stat
+  boxes to 4.07:1 and 2.97:1. Tinting dark keeps the glass read and restores contrast.
+- **Six stat boxes** are now bordered containers with their own 6px backdrop blur: labels
+  uppercase `#b9bcc4` micro, values `--ember-lift` orange at 800.
+- **Ember particle field** (`.particles`) — eight small orange radial dots on a 22s drift,
+  `animation: none` under reduced motion.
+- **Scrim retuned twice.** First pass (0.96→0.82 horizontal plus a vertical pass) killed the
+  interior entirely — a black void, not the requested depth. Final values are directional:
+  0.93 at the left to protect the headline and lede, falling to 0.38 at the right so the interior
+  reads through. That only works *because* the cards and panel are now opaque and carry their own
+  contrast.
+
+**Verification**
+40 text runs audited against rendered pixels: **1 failure**, the pre-existing CTA gradient
+(3.06:1 "Check availability"). Everything in the panel and cards passes. `tsc --noEmit` clean.
+
+---
+
+## 2026-08-07 — Mobile responsiveness pass + pricing re-validation
+
+### Pricing audit vs. the live source — PASS, no corrections needed
+
+Re-scraped `riseinternet.com/compare-plans` and the fee schedule and diffed against
+`src/lib/plans.ts` and `PRICING_DISCLAIMER`. Everything still matches the 2026-08-06 capture:
+
+- Pro 1 Gbps `$99.99 → $79.99`; Level Up 500 Mbps `$69.99 → $49.99`; Family 150 Mbps
+  `$49.99 → $29.99`; all three "Prices include a $20 AutoPay discount."
+- Advanced Wi-Fi: Free on Pro (Wi-Fi 7), `$15 → $7.50/mo` on Level Up, absent on Family.
+- Stream/device counts, blurbs and the "Every plan includes" four all unchanged.
+- Fee schedule still `Last Updated: 5/26/2026` — `$99` connection, `$6.99` Carrier Recovery,
+  up to `$15` equipment rental, `$50` restocking, up to `$20` late.
+
+Still no promotional end date or intro term anywhere on the source, so none is asserted here.
+The struck prices remain the AutoPay discount, not a limited-time offer.
+
+### Responsive fixes
+
+Audited all 9 routes at 360 / 375 / 414 / 768 / 1024 for horizontal overflow, elements exceeding
+the viewport, and tap targets. **Horizontal overflow was already zero everywhere** — the failures
+were all tap-target size.
+
+- `SiteHeader`: `.brand`, `.phone` and `.navLink` given `min-height: 44px` (`.phone` also
+  `min-width`). The brand link was 126x25.
+- `SiteFooter`: `.link` now `inline-flex` with `min-height: 28px` / `min-width: 24px`, rising to
+  44x44 under `@media (pointer: coarse)`. `.colList` gap trimmed from `--step-3` to `--step-1`
+  since each link now carries its own height. `.phone` given `min-height: 44px`.
+- `LegalShell`: `.sidebarLink` and `.crumbs a` given `min-height: 44px`.
+
+Final audit: **no responsive issues found** across all 45 route/width combinations.
+
+### Two audit-script corrections worth keeping
+
+1. `getComputedStyle(el).display === 'none'` does **not** detect an element hidden by an ancestor —
+   the desktop nav links were being flagged at 360px where `.nav` is hidden. Use
+   `el.offsetParent === null`.
+2. Inline links inside prose are exempt from WCAG 2.5.8 (their size is constrained by the
+   surrounding line-height). Without that exemption the legal pages produce dozens of false
+   failures for email and `riseinternet.com` links inside paragraphs.
+   Also: any element inside an `overflow: hidden` viewport (the marquee track, 6048px) is a false
+   positive for the "wider than viewport" check.
+
+---
+
+## 2026-08-07 — Cross-route nav from legal pages; plan CTAs to "Call now"
+
+**Nav from legal routes**
+`primaryNav` hrefs are hash-only (`#plans`), which resolve to nothing on a legal page — those
+sections do not exist there, so clicking did nothing. `SiteHeader` now reads `usePathname()`:
+on `/` the links stay hash-only so the Lenis handler in `SmoothScroll` intercepts and scrolls
+smoothly; off `/` they render as `next/link` to `/#plans` and route properly. Applies to both the
+desktop nav and the mobile drawer. The logo already pointed at `/` and was fine.
+
+Added `scroll-margin-top: clamp(5.25rem, 7vw, 6rem)` on `section[id]` in globals.css. Without it a
+cross-route hash lands the section flush at y=0, behind the fixed header — the heading was hidden.
+Lenis applies its own `-88` offset for same-page clicks, but a hash arriving via route change is
+handled natively and gets no offset. Verified: sections now land at **96px**, clear of the bar.
+
+**Plan CTAs**
+All three plan cards swapped from "Check availability" to "Call now" with a phone glyph, linking to
+`site.salesPhoneHref`. Each carries a distinct `aria-label` naming the number and the plan, so
+screen-reader users do not get three identical "Call now" links.
+
+This required a fix in `MagneticButton`: it routed every `href` through `next/link`, which is for
+client-side navigation and would intercept `tel:`. It now renders a plain `<a>` when the href has a
+protocol (`tel:`, `mailto:`, external `http`) and `next/link` otherwise.
+
+**Verification**
+From `/privacy-policy`, each of the four nav items navigates to `/` and lands on its own section
+(`plans`, `advanced-wifi`, `how-it-works`, `faq` each at 96px). Logo returns `/`. On `/` the hrefs
+revert to hash-only. Plan CTAs confirmed rendering as `<a href="tel:18444117473">`. Zero console
+errors, `tsc --noEmit` clean.
+
+---
+
+## 2026-08-07 — Section differentiation pass
+
+**Problem:** PlanGrid and HowItWorks were both white rounded cards in an equal grid with the same
+scale-and-fade stagger; FAQ was a generic light accordion. Three sections read as one template.
+
+**How it works — card grid → full-bleed alternating rows**
+No container, no cards, no borders, no shadows. Each step is a photograph bleeding to the viewport
+edge with copy on the facing side; sides swap every row. Numerals are oversized and *outlined*
+(`-webkit-text-stroke`) rather than filled badges. Head is a two-column split with the second line
+in a quieter grey. Entrance is a **split reveal** — the photo unclips from the outer edge while the
+copy slides in from the opposite direction — driven by per-row ScrollTriggers with `once: true`,
+replacing the previous scattered scrub-assembly.
+
+**Plans — equal grid → asymmetric offset**
+Columns are now `0.92fr / 1.16fr / 0.92fr`: the recommended plan is wider and sits flush while the
+flanking two drop by `clamp(1.5rem, 3vw, 3rem)`. Cards are **borderless and floating**
+(`--lift-float`, no border, `--bend-xl`) instead of hairline-bordered. Section background is tinted
+with an ember radial rather than plain white. Head is centred; the heading stacks three lines with
+the middle in `--ember-press`. Entrance dropped `StaggerGrid` for a per-card **clip wipe from the
+bottom** on a **centre-out** delay (`[0.16, 0, 0.16]`) — the featured card lands first.
+
+**FAQ — light accordion → dark, numbered, reversed**
+Section is now dark with an ember radial. Columns reversed: the list leads on the **left** and the
+sticky head sits on the **right** (`order`), the inverse of every other section. Each question
+carries a tabular `01`–`05` index instead of an icon tile. All surfaces retuned for the dark panel.
+
+**TrustBand — oversized figures added**
+`trustStats` (21+ years, 4.2M households, 10 states, 24/7) were orphaned when Why Rise was removed
+— the strongest trust signals on the page were rendering nowhere. They are back as four
+hairline-divided columns of display numerals, no cards or tiles.
+
+**Contrast failures this introduced, both fixed**
+- "One afternoon." used `--ink-faint` (#b3b3b3) → **2.10:1** on white, under the 3:1 large-text
+  floor even at 80px. Moved to `--ink-mute` (5.28:1).
+- The FAQ eyebrow's `--ember-text` measured **3.98:1** against the new dark panel. Moved to
+  `--ember-lift`.
+
+**Verification**
+Page-wide contrast: 0 real failures. The two remaining reported (`FinalCTA` headline, FAQ portrait
+caption) are the known gradient-background false positives — both verified by pixel measurement
+earlier at 5.57:1 and 9.35:1. Responsive audit across 9 routes × 5 widths: **no issues**.
+Warm **LCP 1160ms, CLS 0**. `tsc --noEmit` clean.
+
+---
+
+## 2026-08-07 — Plan cards were invisible (two regressions, both previously documented)
+
+The clip-wipe entrance added in the differentiation pass made all three plan cards render at zero
+size. Two separate bugs, and **both were ones this file already warned about** — worth reading
+before touching entrance animations again.
+
+1. **Clip/observer deadlock.** `initial={{ clipPath: 'inset(100% 0% 0% 0%)' }}` was set on the same
+   element carrying `whileInView`. A fully closed inset collapses the visible box, so
+   IntersectionObserver reports `isIntersecting: false` at every scroll position and the animation
+   that would open it never fires. Identical to the ClipWipe deadlock fixed earlier. The trigger
+   now lives on `.cell` (never clipped) and the clip on an inner `.wipe`.
+2. **Reduced-motion hydration mismatch.** The first fix branched
+   `variants={reduced ? {} : {...}}`. `useReducedMotion()` returns null during SSR, so the server
+   emitted the closed clip while the client emitted nothing, and React left the server's inline
+   style in place — cards stayed invisible for reduced-motion users specifically. The branch is
+   gone; `.wipe` carries `data-motion` and globals.css neutralises it.
+
+Also fixed: the "Recommended" badge hung above the card on `translateY(-50%)` and was cut off by
+the new clip boundary. It now sits inside the card, with extra top padding on the featured card so
+it clears the speed block.
+
+**Verification**
+Cards render at 318x597 / 401x609 / 318x671. Normal motion resolves to `inset(0%)`; reduced motion
+to `clip-path: none`. Badge confirmed inside the card bounds and not overlapping the speed block.
+Responsive and page contrast both clean. `tsc --noEmit` clean.
+
+**Rule for future entrance animations:** never put a closing clip-path and `whileInView` on the
+same element, and never branch rendered output on `useReducedMotion()`.
+
+---
+
+## 2026-08-07 — Section rhythm, Getting-connected relayout, hero motion
+
+**Gaps**
+`--bay-y` was `clamp(3.5rem, 6vw+1.5rem, 7rem)` — 112px top *and* bottom, so 224px of dead space
+between every pair of sections. Now `clamp(2.75rem, 3.5vw+1rem, 4.5rem)`. Also trimmed PlanGrid's
+head margin, the "Every plan includes" offset, and TrustBand's internal stacking.
+
+**Getting connected — full-bleed rows → horizontal snap rail**
+The alternating rows spent half the viewport on a photo and squeezed the copy into a narrow
+gutter, which is what made it read as wasted space. Replaced with four equal panels on one
+`scroll-snap-type: x mandatory` track: 4:3 photo, numeral inset bottom-left, copy beneath. Panels
+become 78%-width swipe cards below 720px. Entrance is a staggered rise with a slight `rotateZ`
+settle, replacing the per-row split reveal.
+
+**Hero motion — `components/hero/HeroMotion.tsx` (new)**
+- GSAP Ken Burns on the plate (26s scale/drift yoyo), selected by `[data-hero-plate]` so the
+  static Hero component keeps no animation code.
+- GSAP light beam sweeping the frame on a 7s timeline with a 6s repeat delay.
+- Two Framer Motion aurora blooms on 24s / 31s loops, `mix-blend-mode: screen`.
+- GSAP `quickTo` pointer drift on the whole layer (desktop only).
+- Fine grain overlay to stop the blurred blooms banding.
+
+The layer sits at `z-index: -1`, between the plate (`-2`) and the contrast scrim (`0`), so none of
+it can undo the hero's measured legibility. Renders nothing at all under reduced motion.
+
+**Contrast failure this introduced, fixed**
+The rail numerals sit on the photos and measured **1.01 / 3.84 / 1.90 / 1.25** — they land on a
+bright window, sky and lamp. Added a footer scrim to `.shot::after`; now **3.89 / 14.14 / 7.72 /
+8.77**.
+
+**Verification**
+Responsive: no issues across 9 routes × 5 widths. Hero motion confirmed animating (plate, beam and
+aurora all changing between samples) and confirmed absent under reduced motion, 0 page errors.
+**LCP 796ms, CLS 0.007.** `tsc --noEmit` clean.
+
+Note: `page-contrast.mjs` still reports the four numerals at 1.13:1 — that is the script resolving
+the section's white background rather than the photo behind them. Pixel measurement (`num.mjs`) is
+authoritative and shows them passing.
+
+---
+
+## 2026-08-07 — Plan card corners + hover states
+
+**Cut corners**
+`clip-path: inset(0%)` still clips to a sharp rectangle, so after the wipe finished it was squaring
+off the cards' `--bend-xl` corners and slicing their drop shadow — visible as notched bottom
+corners. The `shown` variant now carries `transitionEnd: { clipPath: 'none' }`, releasing the clip
+once the animation completes. `.wipe` also got bottom padding (with a negative margin to keep
+layout unchanged) so the shadow has somewhere to live while the clip is still active mid-wipe.
+Verified: all three resolve to `clip-path: none` after entry.
+
+**Hover**
+- `.card::after` — ember ring (`inset 0 0 0 1.5px` + a soft 4px outer halo), fading in on hover.
+  The featured card gets a white-tinted variant so the ring reads against its orange fill.
+- `.card::before` — warm bloom rising from the base, blurred 28px.
+- Lift raised from 6px to 8px with `--lift-deep`.
+- Speed figure warms to `--ember-press` (4.56:1 on white, passes at display size) and the unit
+  nudges up 3px on `--ease-pop`.
+- Spec divider rules brighten to `--ember-haze` as a set.
+
+**Measurement note**
+`[class*="card"]` is ambiguous — TiltCard and PlanGrid both define a `.card` class, and the
+TiltCard wrapper comes first in the DOM. An initial probe reported the ring at opacity 1 at rest
+and the speed colour unchanged on hover; both were the selector matching the wrong element. Scope
+to the module-prefixed name (`[class*="PlanGrid_card"]`) when probing these.
+
+**Verification**
+Responsive clean; page contrast unchanged. `tsc --noEmit` clean.
+
+---
+
+## 2026-08-07 — Vivid hero motion
+
+`HeroMotion` rebuilt. Previous version (Ken Burns + two blooms + a beam) was too subtle to read
+against a dark photograph.
+
+**Now running**
+- **Real 3D tilt.** `perspective: 1500px` on `.hero`, `transform-style: preserve-3d` on the plate,
+  and GSAP `quickTo` driving `rotationX/rotationY/scale` from pointer position. Confirmed
+  resolving to `matrix3d(...)` and changing across the viewport. The plate is bled `-4%` so the
+  rotation never exposes an edge.
+- **Signal rings** — four SVG circles expanding out of the lit window on a 6.4s loop with staggered
+  delays, stroked on an ember→cyan gradient, opacity driven per-frame in `onUpdate` so each reads
+  as a pulse (fast in, slow out). Ties the motion to the fixed-wireless story rather than being
+  abstract decoration.
+- **14 drifting motes** on independent position and opacity loops.
+- **Two Framer Motion aurora blooms** (19s / 26s) at roughly 1.5× the previous intensity, plus a
+  sweeping beam.
+- **`HeroReveal`** (new) — Framer entrance for the copy. The `lcp` prop marks the headline, which
+  animates **transform only and never fades**: an element at `opacity: 0` is not counted as
+  painted, so a fade would push LCP out by the transition length. Markup is identical under
+  reduced motion (only duration changes), so it cannot desync SSR from hydration.
+
+**Bug found and fixed**
+Motes were static. `gsap.set(mote, { y: '60%' })` followed by `gsap.to(mote, { y: '-=40' })` mixes
+percentage and pixel units and GSAP cannot resolve the relative step. Placement moved to
+`left`/`top`, motion to transforms from zero. All 14 confirmed moving.
+
+**Verification**
+All layers confirmed animating (plate, image, aurora, beam, rings, 14/14 motes); pointer tilt
+confirmed responding. Reduced motion renders the layer not at all. Headline opacity stays 1
+throughout entry. **LCP 692ms, CLS 0.0019.** Hero contrast measured with the cursor parked over the
+copy: headline **16.59:1**, lede **19.41:1** — well up on the previous 5.57/4.99, because the
+plate bleed moved darker artwork under the text. Responsive clean. `tsc --noEmit` clean.
+
+Note: `Hero_plate` and `HeroMotion_root` both exceed the viewport by design (negative inset) and
+are clipped by `.hero { overflow: hidden }`. Added to the responsive script's clipped-ancestor
+exclusion alongside the marquee.
+
+---
+
+## 2026-08-07 — Hero signal rings removed
+
+The concentric rings read as a target/ripple sitting oddly over a photograph of a room. Refined
+them first into broadcast arcs anchored off the top-right corner (semantically right for fixed
+wireless), but that did not work either, for a structural reason worth recording:
+
+**Screen-blended strokes need a dark backdrop.** This hero is a dark room on the left and a bright
+lit window on the right. Over the window the arcs were invisible at any tasteful weight; anywhere
+dark enough to show them is the left third, which the headline occupies. Pushed bright enough to
+register, they returned to looking like a target.
+
+Removed rather than left in as dead weight. The hero's motion is now carried by the 3D pointer
+tilt, the Ken Burns push, two aurora blooms, the sweeping beam and 14 drifting motes — all
+verified still running, with reduced motion still rendering the layer not at all.
+
+`hero-vivid`/`hero-arcs` screenshots in the scratchpad show the before/after if this is revisited.
+If some signal motif is wanted later, it needs to live somewhere with a dark background — the
+TrustBand or the Final CTA would both take one.
+
+---
+
+## 2026-08-07 — Hero motion made actually visible (`HeroGrid`)
+
+**Why three previous attempts failed.** Every ambient effect so far — aurora blooms, motes, beam,
+signal rings, arcs — was rendered by `HeroMotion` at `z-index: -1`, i.e. *beneath* the contrast
+scrim. That scrim runs at **0.9–1.0 alpha across the left of the hero**, which is precisely the
+dark region where a screen-blended effect could otherwise be seen. Nothing drawn under it there is
+visible at any brightness. The hero kept reading as static because, in the areas that mattered, it
+was.
+
+**`components/hero/HeroGrid.tsx` (new)** renders **above** the scrim (`z-index: 0`, after it in the
+DOM), below the copy:
+- **Receding 3D perspective grid** along the floor of the frame — `perspective: 320px` with the
+  plane at `rotateX(72deg)`, its `background-position` scrolled on a 5.5s GSAP loop so the lines
+  travel toward the horizon. Masked out before it reaches the address form.
+- **Three data streams** — SVG curves with `strokeDasharray` sized to 18% of path length and
+  `strokeDashoffset` animated, so light runs along each. Masked to the left ~52% where the artwork
+  is near-black; over the lit window on the right they would be invisible anyway.
+- **Travelling pulses** riding the same curves via `getPointAtLength`, opacity following a sine so
+  each fades in and out across its run.
+
+`HeroMotion` stays below the scrim for what genuinely belongs there (the plate's 3D pointer tilt,
+Ken Burns, aurora, beam, motes).
+
+**Verification**
+Grid scroll, stream flow and pulse travel all confirmed changing between samples; nothing renders
+under reduced motion; zero page errors. Contrast unmoved — headline **16.4:1**, lede **12.5:1**
+worst case with the cursor over the copy. **LCP 1392ms, CLS 0.0014.** Responsive clean.
+
+`HeroGrid_floor` / `HeroGrid_grid` exceed the viewport by design (negative inset plus rotation) and
+are clipped by the layer's `overflow: hidden`; added to the responsive script's exclusion list
+alongside `Hero_plate`, `HeroMotion_root` and the marquee.
+
+**Rule:** anything meant to be seen in the hero's left two thirds must render above the scrim.
+
+---
+
+## 2026-08-07 — Hero overlays removed for good
+
+Removed `HeroGrid` (perspective grid + data streams + pulses) and the drifting motes from
+`HeroMotion`. Thin diagonal strokes over a photograph of a living room read as scratches or render
+artifacts, and the motes read as dust specks or dead pixels — not as design.
+
+**The pattern across four failed attempts** — signal rings, broadcast arcs, data streams, motes:
+this hero's background is a literal photograph of a domestic interior. Abstract tech-graphic
+overlays fight it rather than enhance it, and no amount of tuning position, weight or opacity
+changes that. Anything visible enough to register looks like damage to the photo; anything subtle
+enough not to, is invisible.
+
+**What remains, and why it works:** motion applied to the photograph itself rather than drawn on
+top of it — GSAP 3D pointer tilt against the hero's perspective, a slow Ken Burns push, two aurora
+blooms that shift the colour of the scene, a soft light beam, and the Framer copy entrance. That
+reads as cinematography, which a photographic hero can carry.
+
+**Do not add particle, line, grid, ring or mesh overlays to this hero.** Four attempts, all
+rejected. If a tech motif is wanted, it belongs on a section with a flat dark background —
+TrustBand or the Final CTA.
+
+**Verification:** zero stray overlay elements in the DOM; Ken Burns, aurora, beam and pointer tilt
+all confirmed still animating; zero console errors; `tsc --noEmit` clean.
+
+---
+
+## 2026-08-07 — `HeroBackground.tsx` — hero backdrop consolidated into four layers
+
+Replaces `HeroMotion` (deleted) and the plate/scrim markup that lived in `Hero.tsx`. One typed
+client component now owns the entire backdrop; `Hero.tsx` passes the image and a `depth` prop.
+
+**Layers, back to front**
+0. **Mesh gradient** — three offset radials (deep indigo, dark ember, muted magenta) over `#070a14`,
+   `background-position` animated across a 34s Framer loop. Kept dark: it sits under the photograph
+   and only has to stop the fill reading as flat.
+1. **Photograph** — parallax wrapper driven by `useMotionValue` → `useTransform` → `useSpring`
+   (stiffness 60 / damping 20 / mass 0.8), mapped to a **negative** range so the plate drifts
+   against the cursor. Inset `-24px` so the offset never exposes an edge. Inside it, the image runs
+   `scale: [1, 1.05, 1]` over 40s linear infinite.
+2. **Laptop glow** — bloom mapped to the screen in the lower-right of the frame, `blur(100px)`,
+   `mix-blend-mode: screen`, opacity pulsing `[0.3, 0.6, 0.4, 0.7, 0.3]` over 4.2s on uneven
+   `times` so it reads as flicker rather than a sine.
+3. **Film grain** — inline SVG `feTurbulence` at `opacity: 0.05`. No network request, no asset.
+4. **Contrast scrim** — *not in the brief, and deliberately kept.* Without it the headline measures
+   1.2:1 against the artwork. Holds 0.9 to 40% and 0.78 to 62% because the headline runs to ~62% of
+   the viewport; fading earlier put its darkest gradient stop at 1.31:1 on a lit area. Goes
+   vertical below 900px where the copy spans full width.
+
+Content sits at `z-index: 10`.
+
+**Reduced motion** collapses transition durations and zeroes the parallax travel — it never changes
+what renders. `useReducedMotion` returns null during SSR, so branching markup on it strands
+elements in their initial style (this bit the plan cards earlier).
+
+**LCP** is protected: the image keeps `priority`, and the headline animates transform only,
+never opacity.
+
+Note: this project has no Tailwind. The requested utilities (`opacity-[0.05]`, `blur-[100px]`,
+`bg-blue-400/20`, `mix-blend-screen`, `relative z-10`) were translated to their computed values in
+the existing CSS Module token system.
+
+**Verification**
+All four layers confirmed animating; under reduced motion mesh, Ken Burns, parallax and glow all
+confirmed off while grain and scrim still render. Contrast held — headline **17.9:1**, lede
+**19.34:1** worst case with the cursor over the copy. **LCP 1840ms, CLS 0.0014.** Responsive clean.
+Zero console errors. `tsc --noEmit` clean.
+
+**Addendum — glowing dots (left edge)**
+22 dots added to `HeroBackground` at `z-index: 5`, above the scrim. Positions are hand-authored and
+weighted to `x < 26%`, with a radial mask (`70% 90% at 0% 50%`) so density falls away before the
+photograph starts. Blue and warm variants, three-stop box-shadow halos, each on its own 7–13s
+opacity and drift loop with staggered delays.
+
+This is the same idea as the motes that were removed earlier, and it works here for one reason:
+placement. Over the photograph they read as dust on the lens; against the flat near-black left
+corner they read as ambient light. Confirmed all 22 sit inside the left third.
+
+Contrast unmoved: headline **17.76:1**, lede **19.34:1**. Frozen under reduced motion (0 of 22
+animating). Responsive clean.
+
+**Addendum — dots scattered full-frame, network clusters added**
+- Dots extended to **34**, spread L22 / C6 / R6 across the three thirds. The layer mask changed
+  from a left-only radial to a horizontal ramp holding full strength to 34% and easing to 0.4 at
+  the right edge — at full brightness over the photograph they read as dust on the lens, so the
+  right half is deliberately dimmer.
+- **Two sparse network clusters** (`.nets`), five nodes and five edges each: one in the dark left
+  corner, one centre-frame. Hairline edges at `0.09` stroke with `vector-effect: non-scaling-stroke`
+  so they stay 1px at any viewport. Nodes pulse on staggered 5–9s loops. Layer opacity 0.5 and
+  masked out entirely past 88%, so nothing lands on the lit part of the photograph.
+
+Both sit at `z-index: 5`, above the scrim — the only place effects are visible in the dark left
+region.
+
+Contrast unmoved: headline **17.9:1**, lede **19.34:1**. Both layers frozen under reduced motion.
+Responsive clean.
+
+---
+
+## 2026-08-07 — Network clusters made visible; CountUp fixed
+
+**Network clusters** were already present but at `opacity: 0.5` with a `0.09` stroke — effectively
+invisible. Now three clusters (14 nodes, 14 edges): two in the dark left corner, one centre-frame.
+Layer opacity 0.9, stroke 0.16, and the mask holds full strength to 62% so the centre cluster is no
+longer dimmed. Split L7 / C7 confirmed.
+
+Nodes moved out of the SVG into positioned elements. The streams SVG uses
+`preserveAspectRatio="none"` so its lines span the box correctly, but that same non-uniform scale
+turns `<circle>` into an ellipse — the nodes were rendering as horizontal ovals.
+
+**CountUp (TrustBand) — two bugs from the previous session, both fixed**
+1. *Counts stalled near zero* (figures read "2+", "0.3M"). The effect depended on the regex `match`
+   array, which is a new object every render, so it re-ran continuously and reset `start` before
+   the animation could advance. Now depends on extracted primitives (`target`, `suffix`,
+   `decimals`).
+2. *Hydration error under reduced motion.* The initial render seeded `0`, but `useReducedMotion()`
+   returns null during SSR and a boolean after, so server and client disagreed. State now
+   initialises to the finished value, so both render the same thing and the count only starts
+   post-mount.
+
+Frame-by-frame capture confirms the roll: `10+ → 18+ → 20+ → 21+` over ~900ms, settling on
+21+ / 4.2M / 10 / 24/7.
+
+**Selector trap, again:** `[class*="netNode"]` also matches the container `netNodes`, which
+reported the layer as a 1440×803 "node" and made the roundness check fail. Same class as the
+`[class*="card"]` / TiltCard collision. Use the `__hash` suffix (`[class*="netNode__"]`).
+
+**Verification** All 14 nodes round and pulsing; frozen under reduced motion; zero console errors.
+Contrast desktop headline **17.9:1**, lede **16.82:1**; mobile headline 5.98:1 (floor is 3:1 at
+that size). Responsive clean. `tsc --noEmit` clean.
+
+---
+
+## 2026-08-07 — ZIP-only availability field; ember glow on the light sections
+
+**Availability input is now a ZIP field, not a free-text address box**
+`AddressCheck` changed beyond the placeholder, because a placeholder swap alone would have left a
+street-address autofill and a full keyboard on mobile:
+- `placeholder` → "Enter your ZIP code"; `<label>` and the success message updated to match
+- `autoComplete` `street-address` → `postal-code`
+- `inputMode` `text` → `numeric` (numeric keypad on mobile)
+- `pattern="[0-9]{5}(-[0-9]{4})?"`, `maxLength={10}`
+- Validation moved from a length>=4 check to `/^\d{5}(-\d{4})?$/`, so ZIP+4 is accepted and
+  anything else is rejected with "Enter a 5-digit ZIP code…"
+
+Verified: invalid input surfaces the error, `80202` returns the confirmation.
+
+**Ember glow on the light sections**
+- `PlanGrid`: three positioned radials on the section plus a wide blurred `::before` ellipse
+  (`blur(90px)`) behind the cards. Section children lifted to `z-index: 1` so the wash stays
+  behind them.
+- `HowItWorks`: was flat `--pane-base`. Now two corner radials plus a blurred ember band under the
+  rail. `isolation: isolate` + `overflow: hidden` so the `::before` cannot escape the section.
+
+Both are warm-light washes, not shapes — heavy blur and low alpha, keyed to `--ember-core` /
+`--ember-lift`.
+
+**Verification** Contrast: 0 real failures (the four HowItWorks numerals reported at 1.13:1 are the
+known false positive — the script resolves the section background instead of the photo behind them;
+`num.mjs` measures them at 3.89–14.14:1). **LCP 1024ms, CLS 0.0001.** Responsive clean across 9
+routes × 5 widths. `tsc --noEmit` clean.

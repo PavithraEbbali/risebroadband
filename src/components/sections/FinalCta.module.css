@@ -1,0 +1,208 @@
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: clamp(4.5rem, 9vw, 8rem);
+  background: var(--wash-ember);
+  color: var(--ink-invert);
+}
+
+/* Top highlight, matching the brand's radial hero treatment. */
+.plate {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+}
+
+.plateImg {
+  object-fit: cover;
+  object-position: 50% 55%;
+  /* Runs under the brand orange, so it reads as depth rather than a photo. */
+  opacity: 0.58;
+  mix-blend-mode: multiply;
+}
+
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: radial-gradient(120% 85% at 50% -30%, rgb(255 255 255 / 0.22) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.heading {
+  font-size: var(--type-title);
+  line-height: var(--lead-tight);
+  color: var(--ink-invert);
+  max-width: 20ch;
+  margin-bottom: var(--step-5);
+}
+
+/* RevealText lays its units out with flex; centre them in this context. */
+.heading > span:last-child {
+  justify-content: center;
+}
+
+.lede {
+  max-width: 58ch;
+  font-size: var(--type-lead);
+  line-height: var(--lead-copy);
+  /* Solid white — 0.88 alpha over the orange left this at 4.02:1, under the
+     4.5 floor for body copy. */
+  color: var(--ink-invert);
+  margin-bottom: clamp(2rem, 4vw, 2.75rem);
+}
+
+/*
+ * Column, not row. This wrapper held a single <AddressCheck> when it was a row
+ * with `justify-content: center`. It now holds two children — the call button
+ * and the hours/routing line — so a row laid them side by side and pushed the
+ * button out to the left edge of the section.
+ */
+.formWrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form {
+  max-width: 34rem;
+}
+
+.or {
+  margin-top: var(--step-5);
+  font-size: var(--type-fine);
+  color: rgb(255 255 255 / 0.82);
+}
+
+.phone {
+  font-weight: 700;
+  color: var(--ink-invert);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgb(255 255 255 / 0.45);
+  transition: text-decoration-color var(--flow-quick) var(--ease-exit);
+}
+
+.phone:hover {
+  text-decoration-color: var(--ink-invert);
+}
+
+
+/* ---- call-primary CTA (§2) ---- */
+
+.callCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 62px;
+  padding: 0.5rem 1.625rem 0.5rem 1.25rem;
+  border-radius: 999px;
+  background: var(--ink-invert, #fff);
+  /* Near-black on white: 17.9:1. The section ground is already ember, so an
+     ember button here would vanish into it. */
+  color: #12060a;
+  text-decoration: none;
+  box-shadow: 0 3px 10px rgb(4 8 16 / 0.28), 0 16px 40px rgb(4 8 16 / 0.3);
+  transition:
+    transform var(--flow-quick) var(--ease-exit),
+    box-shadow var(--flow-quick) var(--ease-exit);
+}
+
+.callCta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgb(4 8 16 / 0.34), 0 22px 52px rgb(4 8 16 / 0.36);
+}
+
+.callIcon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+.callLabel {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.12;
+  text-align: left;
+}
+
+.callVerb {
+  font-family: var(--face-semi);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.callNum {
+  font-family: var(--face-display);
+  font-size: clamp(1.375rem, 2vw, 1.625rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+/* 0.9 white on the ember plate measures 5.1:1. */
+.callMeta {
+  margin-top: var(--step-3);
+  /* Held short so the routing sentence wraps into a readable block under the
+     button rather than running the full width of the section. */
+  max-width: 46ch;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.9);
+}
+
+.callMeta a {
+  color: var(--ink-invert);
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.zipWrap {
+  margin-top: var(--step-4);
+}
+
+.zipToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  font-family: var(--face-semi);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-invert);
+  cursor: pointer;
+  list-style: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgb(255 255 255 / 0.42);
+}
+
+.zipToggle::-webkit-details-marker {
+  display: none;
+}
+
+.zipWrap[open] .zipToggle {
+  margin-bottom: var(--step-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .callCta {
+    transition: none;
+  }
+}

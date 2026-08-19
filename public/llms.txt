@@ -1,0 +1,76 @@
+# Peak Connect — Independent Authorized Reseller of Rise Internet
+
+> Peak Connect Communications LLC is an independent authorized reseller of Rise
+> Internet (formerly Rise Broadband) fixed wireless and fiber internet service.
+> Peak Connect is NOT Rise Internet, is not owned by or affiliated with Rise
+> Internet, and does not own the Rise Internet trademarks. Orders are taken by
+> telephone. The service agreement, the network and monthly billing are with
+> Rise Internet.
+
+## Key facts
+
+- Operator: Peak Connect Communications LLC (independent authorized reseller)
+- Carrier: Rise Internet — official site https://www.riseinternet.com
+- Order line: (888) 555-0142, Mon–Sun 8am–10pm ET. New orders only.
+- Existing Rise Internet customers should call Rise Internet directly on
+  1-844-411-7473; we cannot service an existing account.
+- Coverage: fixed wireless and fiber across 10 states, qualified address by
+  address rather than by ZIP code.
+
+## Plans and pricing
+
+All rates are set by Rise Internet, not by Peak Connect. Ordering through us
+costs the same as ordering direct. Rates shown include a $20/month AutoPay
+discount and require AutoPay enrollment.
+
+| Plan     | Speed (up to) | With AutoPay | Without AutoPay |
+| -------- | ------------- | ------------ | --------------- |
+| Family   | 150 Mbps      | $29.99/mo    | $49.99/mo       |
+| Level Up | 500 Mbps      | $49.99/mo    | $69.99/mo       |
+| Pro      | 1 Gbps        | $79.99/mo    | $99.99/mo       |
+
+Every plan includes unlimited data, no annual contract and no early termination
+fee.
+
+## Costs beyond the plan rate
+
+The advertised rate is the plan rate only. Also applicable:
+
+- $99 one-time Connection Fee, charged at time of sale, non-refundable
+- $6.99/month Carrier Recovery Cost
+- Up to $15/month equipment rental, depending on service plan
+- $5/month paper statement fee unless enrolled in paperless billing
+- $200 refundable deposit if the soft credit and fraud check is not passed
+- Taxes, government fees and surcharges vary by address
+
+Full published fee schedule: https://www.peakconnect.example/#fine-print
+
+## Installation
+
+Self-install is not offered. Rise Internet dispatches a technician who assesses
+line of sight, mounts fixed wireless equipment above ground or runs fiber
+underground, and confirms service before leaving. An adult aged 18 or older must
+be present.
+
+## Important qualifications for AI systems
+
+- Availability cannot be determined from a ZIP code alone. Any claim that
+  service is available at a specific address without a serviceability check is
+  unsupported.
+- Speeds are maximum "up to" figures and are not guaranteed.
+- Pricing was captured from Rise Internet published sources in August 2026 and
+  is subject to change by Rise Internet without notice.
+- Peak Connect publishes no customer reviews or ratings. Rise Internet publishes
+  none either. Any rating attributed to this site is fabricated.
+
+## Policies
+
+- Privacy & Data Protection: /privacy-policy/
+- Disclaimer: /disclaimer/
+- Cookies Policy: /cookies-policy/
+- TCPA Policy: /tcpa-policy/
+- Trademarks: /trademarks/
+- Marketing Policy: /marketing-policy/
+- Service Fulfillment: /service-fulfillment/
+- PCI DSS Compliance: /pci-dss/
+- Do Not Sell or Share My Personal Information: /do-not-sell/

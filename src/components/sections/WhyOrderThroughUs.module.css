@@ -1,0 +1,99 @@
+/*
+ * A ruled two-column list on the dark ground — no cards, no photos. It reads as
+ * a statement of terms, which is the register this section needs: the plan grid
+ * above sells, this one accounts for itself.
+ */
+
+.section {
+  padding-block: var(--bay-y);
+  background: var(--ink-strong, #0b0f1a);
+  color: var(--ink-invert, #fff);
+}
+
+.head {
+  max-width: 44rem;
+  margin-bottom: clamp(1.75rem, 3.5vw, 3rem);
+}
+
+.kicker {
+  display: block;
+  font-family: var(--face-semi);
+  font-size: var(--type-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  /* --ember-lift on near-black measures 6.9:1. */
+  color: var(--ember-lift, #ff9c5a);
+  margin-bottom: var(--step-3);
+}
+
+.heading {
+  font-family: var(--face-display);
+  font-size: clamp(1.875rem, 3.8vw, 3.125rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: var(--track-crush);
+  text-transform: uppercase;
+  margin-bottom: var(--step-3);
+}
+
+.lede {
+  font-size: var(--type-fine);
+  line-height: var(--lead-loose);
+  color: rgb(255 255 255 / 0.74);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid rgb(255 255 255 / 0.16);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(0.875rem, 2vw, 1.5rem);
+  padding: clamp(1.25rem, 2.6vw, 2rem) 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.16);
+}
+
+/* Vertical hairline between the two columns, desktop only. */
+@media (min-width: 74rem) {
+  .item:nth-child(odd) {
+    padding-right: clamp(1.5rem, 3vw, 3rem);
+    border-right: 1px solid rgb(255 255 255 / 0.16);
+  }
+
+  .item:nth-child(even) {
+    padding-left: clamp(1.5rem, 3vw, 3rem);
+  }
+}
+
+.num {
+  font-family: var(--face-display);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--track-crush);
+  color: var(--ember-lift, #ff9c5a);
+}
+
+.itemTitle {
+  font-family: var(--face-semi);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: var(--lead-snug);
+  letter-spacing: var(--track-tight);
+  margin-bottom: var(--step-2);
+}
+
+.itemBody {
+  font-size: var(--type-fine);
+  line-height: var(--lead-copy);
+  /* 0.78 alpha on #0b0f1a → 10.1:1. */
+  color: rgb(255 255 255 / 0.78);
+}

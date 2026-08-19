@@ -1,0 +1,371 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--pane-night);
+  color: var(--ink-invert);
+  display: flex;
+  /*
+   * Top-aligned rather than centred. With `align-items: center` the copy sat in
+   * the middle of an ~800px section, leaving a large dead gap under the fixed
+   * header; padding alone could not close it, because centring re-split any
+   * space that was freed.
+   */
+  align-items: flex-start;
+  /*
+   * Pinned to the artwork's own 2752 × 1536 ratio, so the image is shown at its
+   * native framing rather than cropped or scaled into. `min-height` is the
+   * floor that keeps the copy from overflowing on narrow viewports, where the
+   * ratio alone would leave the section too short.
+   */
+  aspect-ratio: 2752 / 1536;
+  min-height: 34rem;
+  /*
+   * Top value clears the fixed header (~4.75rem) plus a small breathing gap,
+   * and no more — it is what sets the distance from the nav to the headline.
+   */
+  padding-block: clamp(6rem, 5vw + 3.5rem, 7rem) clamp(2.5rem, 5vw, 4rem);
+}
+
+
+.inner {
+  /* Above every HeroBackground layer. */
+  z-index: 10;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* ---- headline ---- */
+
+.heading {
+  font-size: clamp(2.5rem, 4.4vw + 0.9rem, 4.5rem);
+  /*
+   * 1.08 rather than the 0.86 display crush. At this size the crushed value
+   * collided ascenders with the descenders above them once the headline ran to
+   * more than two lines.
+   */
+  line-height: 1.08;
+  letter-spacing: var(--track-crush);
+  color: var(--ink-invert);
+  /*
+   * 56rem (the max-w-4xl equivalent). The previous 12ch cap was what forced the
+   * one-word-per-line stacking: the longest line, "built for rural addresses",
+   * needs ~700px at the 72px ceiling, and 12ch gave it barely 400. Each of the
+   * two spans in Hero.tsx now sits on a single line.
+   */
+  max-width: 56rem;
+  margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
+  /* Retained for narrow viewports, where a span does still wrap. */
+  text-wrap: balance;
+
+  /*
+   * Saturated orange sweep: orange-300 → orange-600 → orange-300. Every stop is
+   * fully opaque — a translucent stop would let the artwork read through the
+   * glyphs, which defeats the point.
+   *
+   * The track is sized to 220% so `background-position` has somewhere to travel;
+   * that is what drives the shimmer below.
+   */
+  background-image: linear-gradient(
+    to right,
+    #fdba74 0%,
+    #ea580c 50%,
+    #fdba74 100%
+  );
+  background-size: 220% 100%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: headlineSweep 4s linear infinite;
+
+  /*
+   * drop-shadow, NOT text-shadow. With background-clip: text the glyph fill is
+   * transparent, so a text-shadow paints behind the letterforms and is then
+   * visible straight through them — it reads as a grey smear rather than a
+   * shadow. `filter` operates on the composited result, so it shadows the
+   * clipped gradient correctly. Values mirror the requested
+   * `0 4px 30px rgba(0,0,0,1), 0 0 60px rgba(0,0,0,0.8)`.
+   */
+  filter:
+    drop-shadow(0 4px 30px rgb(0 0 0 / 1))
+    drop-shadow(0 0 60px rgb(0 0 0 / 0.8));
+}
+
+@keyframes headlineSweep {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: -220% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .callCta,
+  .zipToggle::after {
+    transition: none;
+  }
+
+  .heading {
+    animation: none;
+  }
+}
+
+.headingLine {
+  display: block;
+}
+
+/*
+ * "RURAL" is now the inverse accent — solid white inside an all-orange
+ * headline. It was brand orange when the headline was white; with the headline
+ * itself running orange-300 → orange-600 → orange-300 an orange accent would
+ * disappear into it entirely, so the emphasis is flipped to keep the word
+ * doing its job.
+ *
+ * It must opt out of the parent's transparent fill explicitly, or it inherits
+ * it and gets painted by the headline gradient like everything else.
+ */
+.accent {
+  font-style: normal;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+}
+
+.lede {
+  /*
+   * 34rem — between the max-w-lg and max-w-xl equivalents, and deliberately the
+   * same width as .action below, so the lede, the address form and the note
+   * under it line up as one column rather than three ragged widths.
+   */
+  max-width: 34rem;
+  font-size: var(--type-lead);
+  line-height: var(--lead-copy);
+  /* Full white — body copy over artwork needs the separation. */
+  color: var(--ink-invert);
+  margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  /*
+   * Stark white on a layered shadow. Sized like drop-shadow-lg but with real
+   * alpha — the Tailwind default (0 4px 3px at 7%) is a card shadow and does
+   * nothing behind thin type over artwork.
+   */
+  text-shadow:
+    0 1px 2px rgb(4 8 16 / 0.85),
+    0 2px 10px rgb(4 8 16 / 0.75),
+    0 4px 22px rgb(4 8 16 / 0.6);
+}
+
+.price {
+  color: var(--ink-invert);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* §2.2.1 disclosure eyebrow. Amber on the darkened plate measures 7.1:1;
+   it has to read as a statement of fact, not as decorative kicker text. */
+.eyebrow {
+  display: inline-block;
+  margin-bottom: var(--step-3);
+  padding: 0.3125rem 0.75rem;
+  border: 1px solid rgb(255 156 90 / 0.5);
+  border-radius: 999px;
+  background: rgb(4 8 16 / 0.55);
+  backdrop-filter: blur(4px);
+  font-family: var(--face-semi);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ember-lift, #ff9c5a);
+}
+
+/* ---- action ---- */
+
+.action {
+  width: 100%;
+  max-width: 34rem;
+}
+
+.actionInner {
+  width: 100%;
+}
+
+/* ---- §2.2 call lockup ---- */
+
+/*
+ * The primary control. Sized so the tap target clears 2.5.8 comfortably and the
+ * number is legible from arm's length on a phone — the whole point of a
+ * phone-lead funnel is that the digits are readable before the tap.
+ */
+.callCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 60px;
+  padding: 0.5rem 1.5rem 0.5rem 1.25rem;
+  border-radius: 999px;
+  background: var(--ember-core);
+  /* Near-black on --ember-core measures 8.9:1. A white label here would be
+     3.06:1 and fail, which is why the label is dark rather than inverted. */
+  color: #12060a;
+  text-decoration: none;
+  box-shadow:
+    0 2px 6px rgb(4 8 16 / 0.4),
+    0 12px 34px rgb(255 86 1 / 0.34);
+  transition:
+    transform var(--flow-quick) var(--ease-exit),
+    box-shadow var(--flow-quick) var(--ease-exit);
+}
+
+.callCta:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 10px rgb(4 8 16 / 0.45),
+    0 18px 44px rgb(255 86 1 / 0.44);
+}
+
+.callCta:active {
+  transform: translateY(0);
+}
+
+.callIcon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+.callLabel {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.12;
+}
+
+.callVerb {
+  font-family: var(--face-semi);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  opacity: 0.78;
+}
+
+.callNum {
+  font-family: var(--face-display);
+  font-size: clamp(1.375rem, 2vw, 1.625rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.callMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+  margin-top: var(--step-3);
+  text-shadow:
+    0 1px 3px rgb(4 8 16 / 0.9),
+    0 2px 10px rgb(4 8 16 / 0.75);
+}
+
+.hours {
+  font-family: var(--face-semi);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink-invert);
+}
+
+/* 0.72 white on the hero's darkened plate measures 6.4:1. */
+.routing {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.72);
+}
+
+.routing a {
+  color: var(--ink-invert);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---- secondary ZIP check ---- */
+
+.zipWrap {
+  margin-top: var(--step-4);
+}
+
+.zipToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  /* 2.5.8 — a <summary> is a real control, so it needs the target height. */
+  min-height: 44px;
+  font-family: var(--face-semi);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.86);
+  cursor: pointer;
+  list-style: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgb(255 255 255 / 0.34);
+  text-shadow: 0 1px 4px rgb(4 8 16 / 0.9);
+}
+
+.zipToggle::-webkit-details-marker {
+  display: none;
+}
+
+.zipToggle::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--flow-quick) var(--ease-exit);
+}
+
+.zipWrap[open] .zipToggle::after {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+.zipWrap[open] .zipToggle {
+  margin-bottom: var(--step-3);
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 900px) {
+  /* Below this the artwork's own ratio is far shorter than the copy needs, so
+     the ratio is dropped and the image covers whatever height the content
+     dictates. */
+  /*
+   * Top padding has to clear the fixed header, and the header GROWS as the
+   * viewport narrows: the §2.0 disclosure sentence wraps to two lines under
+   * ~480px and three under ~380px, taking the header from 106px to ~140px.
+   * A vw-based clamp shrinks exactly where the header expands, which is how
+   * the eyebrow ended up underneath it — so these are flat floors instead.
+   */
+  .hero {
+    aspect-ratio: auto;
+    min-height: 0;
+    padding-block: 8.5rem clamp(3rem, 8vw, 4rem);
+  }
+
+  .heading {
+    max-width: none;
+  }
+
+}
+
+/* Three-line disclosure territory. */
+@media (max-width: 430px) {
+  .hero {
+    padding-top: 10rem;
+  }
+}
+
